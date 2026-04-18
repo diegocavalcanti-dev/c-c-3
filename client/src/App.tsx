@@ -14,7 +14,6 @@ import AdminPostEditor from "./pages/admin/AdminPostEditor";
 import AdminCategories from "./pages/admin/AdminCategories";
 import AdminImport from "./pages/admin/AdminImport";
 import AdminMedia from "./pages/admin/AdminMedia";
-import AdminUsers from "./pages/admin/AdminUsers";
 import AdminCMSPro from "./pages/admin/AdminCMSPro";
 import AdminDashboardPro from "./pages/admin/AdminDashboardPro";
 import AdminPostsListPro from "./pages/admin/AdminPostsListPro";
@@ -37,7 +36,6 @@ function Router() {
         <Route path="/admin/posts/novo" component={AdminPostEditor} />
         <Route path="/admin/posts/:id/editar" component={AdminPostEditor} />
         <Route path="/admin/categorias" component={AdminCategories} />
-        <Route path="/admin/usuarios" component={AdminUsers} />
         <Route path="/admin/importar" component={AdminImport} />
         <Route path="/admin/media" component={AdminMedia} />
 

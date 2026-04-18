@@ -300,17 +300,3 @@ export async function bulkInsertPosts(postsData: Array<InsertPost & { categoryId
   }
   return inserted;
 }
-
-// ─── User Management ─────────────────────────────────────────────────────────
-
-export async function getAllUsers() {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(users).orderBy(users.createdAt);
-}
-
-export async function updateUserRole(userId: number, role: 'admin' | 'user') {
-  const db = await getDb();
-  if (!db) throw new Error("DB not available");
-  return db.update(users).set({ role }).where(eq(users.id, userId));
-}
