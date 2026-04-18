@@ -7,7 +7,7 @@ export const getLoginUrl = () => {
   
   // Use Manus domain as the primary redirect URI for OAuth
   // This ensures OAuth always works regardless of which domain the user accesses from
-  const redirectUri = `https://militaryhub-mbzaujlx.manus.space/api/oauth/callback`;
+  const redirectUri = `https://combateapi-7di34rx2.manus.space/api/oauth/callback`;
   const state = btoa(window.location.origin); // Store the actual origin in state for later redirect
 
   // Use the correct OAuth portal URL

@@ -10,7 +10,7 @@ async function generateSitemap() {
   
   try {
     // Buscar todos os posts da API
-    const baseUrl = "https://militaryhub-mbzaujlx.manus.space/api/trpc/posts.list";
+    const baseUrl = "https://combateapi-7di34rx2.manus.space/api/trpc/posts.list";
     const input = encodeURIComponent(JSON.stringify({ "0": { "json": { "page": 1, "limit": 1000 } } }));
     const url = `${baseUrl}?batch=1&input=${input}`;
     

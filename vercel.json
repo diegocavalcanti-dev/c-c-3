@@ -6,11 +6,11 @@
   "rewrites": [
     {
       "source": "/api/public/:path*",
-      "destination": "https://militaryhub-mbzaujlx.manus.space/api/public/:path*"
+      "destination": "https://combateapi-7di34rx2.manus.space/api/public/:path*"
     },
     {
       "source": "/api/trpc/:path*",
-      "destination": "https://militaryhub-mbzaujlx.manus.space/api/trpc/:path*"
+      "destination": "https://combateapi-7di34rx2.manus.space/api/trpc/:path*"
     },
 
     { "source": "/favicon.ico", "destination": "/favicon.ico" },

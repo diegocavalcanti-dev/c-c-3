@@ -67,6 +67,7 @@ async function startServer() {
     "https://www.cenasdecombate.com",
     "https://cenascombat-ytdtojuw.manus.space",
     "https://militaryhub-mbzaujlx.manus.space",
+    "https://combateapi-7di34rx2.manus.space",
     "https://3000-ib3uzyz70vj9sjpfmw221-0b019396.us2.manus.computer",
     process.env.VITE_FRONTEND_URL,
   ].filter(Boolean) as string[];

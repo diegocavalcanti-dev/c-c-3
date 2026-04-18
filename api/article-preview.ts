@@ -68,7 +68,7 @@ export async function GET(request: Request) {
   const backendBase =
     process.env.METADATA_API_BASE_URL ||
     process.env.VITE_API_URL ||
-    "https://militaryhub-mbzaujlx.manus.space";
+    "https://combateapi-7di34rx2.manus.space";
 
   const metaUrl = `${backendBase.replace(/\/$/, "")}/api/public/post-meta/${encodeURIComponent(slug)}`;
 
