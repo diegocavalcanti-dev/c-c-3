@@ -9,7 +9,7 @@ import {
   getAllCategories, getCategoryBySlug, createCategory, updateCategory, deleteCategory,
   getPublishedPosts, getPostBySlug, getPostById, getPostCategories, incrementViewCount,
   createPost, updatePost, deletePost, getAllPostsAdmin, getPostStats,
-  bulkInsertCategories, bulkInsertPosts, createMedia,
+  bulkInsertCategories, bulkInsertPosts, createMedia, getUserByOpenId, updateUserRole, getAllUsers,
 } from "./db";
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
@@ -290,6 +290,28 @@ export const appRouter = router({
 
         const inserted = await bulkInsertPosts(postsToInsert);
         return { inserted, total: input.posts.length };
+      }),
+  }),
+
+  // ─── User Management ───────────────────────────────────────────────────────
+
+  users: router({
+    listAdmins: adminProcedure.query(async () => {
+      return getAllUsers();
+    }),
+
+    promoteToAdmin: adminProcedure
+      .input(z.object({ userId: z.number() }))
+      .mutation(async ({ input }) => {
+        await updateUserRole(input.userId, 'admin');
+        return { success: true };
+      }),
+
+    demoteToUser: adminProcedure
+      .input(z.object({ userId: z.number() }))
+      .mutation(async ({ input }) => {
+        await updateUserRole(input.userId, 'user');
+        return { success: true };
       }),
   }),
 });

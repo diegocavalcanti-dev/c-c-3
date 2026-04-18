@@ -4,7 +4,7 @@ import { getLoginUrl } from "@/const";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  LayoutDashboard, FileText, FolderOpen, Upload, LogOut, Shield, Home, Menu, X
+  LayoutDashboard, FileText, FolderOpen, Upload, LogOut, Shield, Home, Menu, X, Users
 } from "lucide-react";
 import { useState } from "react";
 
@@ -12,6 +12,7 @@ const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/admin/posts", label: "Artigos", icon: FileText },
   { href: "/admin/categorias", label: "Categorias", icon: FolderOpen },
+  { href: "/admin/usuarios", label: "Usuários", icon: Users },
   { href: "/admin/importar", label: "Importar WP", icon: Upload },
 ];
 
