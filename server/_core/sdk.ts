@@ -39,8 +39,9 @@ class OAuthService {
   }
 
   private decodeState(state: string): string {
-    const redirectUri = atob(state);
-    return redirectUri;
+    // State contains the origin, construct the full redirect URI
+    const origin = atob(state);
+    return `${origin}/api/oauth/callback`;
   }
 
   async getTokenByCode(
