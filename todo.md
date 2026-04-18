@@ -44,3 +44,13 @@
 ## Status: COMPLETO ✓
 
 Todas as funcionalidades foram implementadas e testadas com sucesso.
+
+
+## Painel Administrativo Frontend (Completo)
+
+- [x] Implementar layout de dashboard com sidebar de navegação admin
+- [x] Criar rota protegida /admin com redirecionamento para login se não autenticado
+- [x] Implementar página /admin/posts com listagem, criar, editar, publicar, arquivar
+- [x] Implementar página /admin/categories com CRUD completo
+- [x] Integrar formulários com validação e chamadas tRPC aos procedures admin
+- [x] Testar fluxos completos de edição, criação e publicação (23 testes passando)

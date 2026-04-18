@@ -4,6 +4,8 @@ import NotFound from "@/pages/NotFound";
 import Home from "@/pages/Home";
 import ArticlePage from "@/pages/ArticlePage";
 import CategoryPage from "@/pages/CategoryPage";
+import AdminPostsPage from "@/pages/AdminPostsPage";
+import AdminCategoriesPage from "@/pages/AdminCategoriesPage";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -11,10 +13,12 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 function Router() {
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/posts/:slug"} component={ArticlePage} />
-      <Route path={"/categories/:id"} component={CategoryPage} />
-      <Route path={"/404"} component={NotFound} />
+      <Route path="/" component={Home} />
+      <Route path="/posts/:slug" component={ArticlePage} />
+      <Route path="/categories/:id" component={CategoryPage} />
+      <Route path="/admin/posts" component={AdminPostsPage} />
+      <Route path="/admin/categories" component={AdminCategoriesPage} />
+      <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>
