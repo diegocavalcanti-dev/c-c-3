@@ -23,7 +23,7 @@ export default function AdminPostsPage() {
     status: "draft" as "draft" | "published" | "archived",
   });
 
-  const { data: adminData, isLoading, refetch } = trpc.posts.adminList.useQuery({ page: 1, limit: 100 });
+  const { data: adminData, isLoading, refetch } = trpc.posts.adminList.useQuery({ page: 1, limit: 1000 });
   const utils = trpc.useUtils();
   const posts = adminData?.posts || [];
   const { data: categories } = trpc.categories.list.useQuery();
@@ -131,7 +131,7 @@ export default function AdminPostsPage() {
         ) : (
           <Card>
             <CardHeader>
-              <CardTitle>Artigos ({posts.length})</CardTitle>
+              <CardTitle>Artigos ({adminData?.total || posts.length})</CardTitle>
               <CardDescription>Lista de todos os artigos no sistema</CardDescription>
             </CardHeader>
             <CardContent>
