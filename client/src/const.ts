@@ -1,13 +1,13 @@
 export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
 // Generate login URL at runtime so redirect URI reflects the current origin.
-// Supports multiple domains by using the Manus domain as fallback
+// Supports multiple domains by using the current domain for OAuth callback
 export const getLoginUrl = () => {
   const appId = import.meta.env.VITE_APP_ID;
   
-  // Use Manus domain as the primary redirect URI for OAuth
-  // This ensures OAuth always works regardless of which domain the user accesses from
-  const redirectUri = `https://combateapi-7di34rx2.manus.space/api/oauth/callback`;
+  // Use the current origin for the redirect URI
+  // This ensures OAuth works on both development and production domains
+  const redirectUri = `${window.location.origin}/api/oauth/callback`;
   const state = btoa(window.location.origin); // Store the actual origin in state for later redirect
 
   // Use the correct OAuth portal URL
