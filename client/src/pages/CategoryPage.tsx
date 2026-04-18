@@ -1,72 +1,71 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 
-export default function Home() {
+export default function CategoryPage() {
+  const [location, navigate] = useLocation();
+  const categoryId = parseInt(location.split("/categories/")[1] || "0");
   const [page, setPage] = useState(1);
-  const [categoryId, setCategoryId] = useState<number | undefined>();
-  const [, navigate] = useLocation();
 
-  const { data: postsData, isLoading: postsLoading } = trpc.posts.list.useQuery({
-    page,
-    limit: 10,
-    categoryId,
-  });
+  const { data: postsData, isLoading: postsLoading } = trpc.posts.list.useQuery(
+    {
+      page,
+      limit: 10,
+      categoryId,
+    },
+    { enabled: categoryId > 0 }
+  );
 
   const { data: categories } = trpc.categories.list.useQuery();
+  const category = categories?.find((c) => c.id === categoryId);
 
   const handlePostClick = (slug: string) => {
     navigate(`/posts/${slug}`);
   };
 
-  const handleCategoryClick = (id: number) => {
-    setCategoryId(id);
-    setPage(1);
-  };
-
-  const handleClearCategory = () => {
-    setCategoryId(undefined);
-    setPage(1);
-  };
+  if (categoryId === 0) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <Button variant="outline" onClick={() => navigate("/")}>
+            <ChevronLeft className="w-4 h-4 mr-2" />
+            Voltar
+          </Button>
+          <div className="text-center py-12">
+            <h1 className="text-2xl font-bold text-foreground mb-4">Categoria não encontrada</h1>
+            <Button onClick={() => navigate("/")}>Voltar para Home</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-4 py-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">Cenas de Combate</h1>
-          <p className="text-lg text-muted-foreground">
-            Portal de história militar, conflitos mundiais e geopolítica
-          </p>
+          <Button
+            variant="outline"
+            className="mb-6"
+            onClick={() => navigate("/")}
+          >
+            <ChevronLeft className="w-4 h-4 mr-2" />
+            Voltar
+          </Button>
+          <h1 className="text-4xl font-bold text-foreground mb-2">
+            {category?.name || "Categoria"}
+          </h1>
+          {category?.description && (
+            <p className="text-lg text-muted-foreground">{category.description}</p>
+          )}
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {/* Categories Filter */}
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold text-foreground mb-4">Categorias</h2>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={categoryId === undefined ? "default" : "outline"}
-              onClick={handleClearCategory}
-            >
-              Todas
-            </Button>
-            {categories?.map((cat) => (
-              <Button
-                key={cat.id}
-                variant={categoryId === cat.id ? "default" : "outline"}
-                onClick={() => handleCategoryClick(cat.id)}
-              >
-                {cat.name}
-              </Button>
-            ))}
-          </div>
-        </div>
-
         {/* Posts List */}
         <div className="mb-8">
           {postsLoading ? (
@@ -110,7 +109,9 @@ export default function Home() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">Nenhum artigo encontrado.</p>
+              <p className="text-muted-foreground">
+                Nenhum artigo encontrado nesta categoria.
+              </p>
             </div>
           )}
         </div>
