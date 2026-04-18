@@ -12,6 +12,9 @@ type PostMeta = {
   contentHtml?: string | null;
 };
 
+const OG_IMAGE_WIDTH = "1200";
+const OG_IMAGE_HEIGHT = "630";
+
 function escapeHtml(value = "") {
   return value
     .replace(/&/g, "&amp;")
@@ -19,6 +22,12 @@ function escapeHtml(value = "") {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function toAbsoluteUrl(url: string | null | undefined, siteUrl: string) {
+  if (!url) return "";
+  if (/^https?:\/\//i.test(url)) return url;
+  return `${siteUrl}${url.startsWith("/") ? "" : "/"}${url}`;
 }
 
 async function fetchAppShell(origin: string) {
@@ -39,6 +48,7 @@ function stripOldSeoTags(html: string) {
   return html
     .replace(/<title>[\s\S]*?<\/title>\s*/i, "")
     .replace(/<meta\s+name=["']description["'][^>]*>\s*/gi, "")
+    .replace(/<meta\s+name=["']robots["'][^>]*>\s*/gi, "")
     .replace(/<link\s+rel=["']canonical["'][^>]*>\s*/gi, "")
     .replace(/<meta\s+property=["']og:[^"']+["'][^>]*>\s*/gi, "")
     .replace(/<meta\s+name=["']twitter:[^"']+["'][^>]*>\s*/gi, "")
@@ -87,8 +97,6 @@ export async function GET(request: Request) {
       headers: { accept: "application/json" },
     });
 
-    // Se o post não existir ou a API falhar, devolve o app normal.
-    // A SPA decide o que renderizar (404, loading, etc).
     if (!res.ok) {
       return new Response(appShell, {
         status: res.status === 404 ? 404 : 200,
@@ -105,14 +113,21 @@ export async function GET(request: Request) {
     const description =
       post.description ||
       "Portal de história militar, conflitos mundiais e geopolítica.";
-    const canonical =
-      (post.url && post.url.trim()) || `${siteUrl}/${encodeURIComponent(slug)}`;
-    const image =
-      (post.image && post.image.trim()) || `${siteUrl}/og-default.jpg`;
+
+    const canonical = toAbsoluteUrl(
+      (post.url && post.url.trim()) || `/${slug}`,
+      siteUrl
+    );
+
+    const image = toAbsoluteUrl(
+      (post.image && post.image.trim()) || "/og-default.jpg",
+      siteUrl
+    );
 
     const seoBlock = `
 <title>${escapeHtml(title)} | Cenas de Combate</title>
 <meta name="description" content="${escapeHtml(description)}" />
+<meta name="robots" content="max-image-preview:large" />
 <link rel="canonical" href="${escapeHtml(canonical)}" />
 
 <meta property="og:title" content="${escapeHtml(title)}" />
@@ -120,6 +135,10 @@ export async function GET(request: Request) {
 <meta property="og:type" content="article" />
 <meta property="og:url" content="${escapeHtml(canonical)}" />
 <meta property="og:image" content="${escapeHtml(image)}" />
+<meta property="og:image:secure_url" content="${escapeHtml(image)}" />
+<meta property="og:image:width" content="${OG_IMAGE_WIDTH}" />
+<meta property="og:image:height" content="${OG_IMAGE_HEIGHT}" />
+<meta property="og:image:alt" content="${escapeHtml(title)}" />
 <meta property="og:site_name" content="Cenas de Combate" />
 <meta property="og:locale" content="pt_BR" />
 
@@ -127,6 +146,7 @@ export async function GET(request: Request) {
 <meta name="twitter:title" content="${escapeHtml(title)}" />
 <meta name="twitter:description" content="${escapeHtml(description)}" />
 <meta name="twitter:image" content="${escapeHtml(image)}" />
+<meta name="twitter:url" content="${escapeHtml(canonical)}" />
 
 ${
   post.publishedAt
@@ -151,7 +171,6 @@ ${
   } catch (error) {
     console.error("[article-preview] metadata fetch failed:", error);
 
-    // Em caso de erro, devolve o site normal para o usuário.
     return new Response(appShell, {
       status: 200,
       headers: {
