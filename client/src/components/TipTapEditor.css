@@ -1,0 +1,258 @@
+/* =========================================
+   Base
+========================================= */
+.tiptap-editor,
+.tiptap-editor-modern .ProseMirror {
+  min-height: 420px;
+  padding: 1.25rem;
+  font-size: 1rem;
+  line-height: 1.7;
+  outline: none;
+  color: hsl(var(--foreground));
+  caret-color: hsl(var(--foreground));
+}
+
+/* Focus */
+.tiptap-editor:focus,
+.tiptap-editor-modern .ProseMirror:focus {
+  outline: none;
+}
+
+/* Garante foco visual limpo no conteúdo real do TipTap */
+.tiptap-editor .ProseMirror,
+.tiptap-editor-modern .ProseMirror {
+  min-height: 420px;
+  outline: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* =========================================
+   Headings
+========================================= */
+.tiptap-editor h1,
+.tiptap-editor-modern .ProseMirror h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 1.5rem 0 0.75rem;
+}
+
+.tiptap-editor h2,
+.tiptap-editor-modern .ProseMirror h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 1.2rem 0 0.6rem;
+}
+
+.tiptap-editor h3,
+.tiptap-editor-modern .ProseMirror h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 1rem 0 0.5rem;
+}
+
+/* =========================================
+   Paragraph / text
+========================================= */
+.tiptap-editor p,
+.tiptap-editor-modern .ProseMirror p {
+  margin: 0.85rem 0;
+}
+
+.tiptap-editor strong,
+.tiptap-editor-modern .ProseMirror strong {
+  font-weight: 700;
+}
+
+.tiptap-editor em,
+.tiptap-editor-modern .ProseMirror em {
+  font-style: italic;
+}
+
+/* =========================================
+   Lists
+========================================= */
+.tiptap-editor ul,
+.tiptap-editor ol,
+.tiptap-editor-modern .ProseMirror ul,
+.tiptap-editor-modern .ProseMirror ol {
+  margin: 0.8rem 0;
+  padding-left: 1.4rem;
+}
+
+.tiptap-editor li,
+.tiptap-editor-modern .ProseMirror li {
+  margin: 0.4rem 0;
+}
+
+/* =========================================
+   Blockquote
+========================================= */
+.tiptap-editor blockquote,
+.tiptap-editor-modern .ProseMirror blockquote {
+  border-left: 4px solid hsl(var(--primary));
+  padding: 0.75rem 1rem;
+  color: hsl(var(--muted-foreground));
+  margin: 1.2rem 0;
+  font-style: italic;
+  background: hsl(var(--muted) / 0.3);
+  border-radius: 0.75rem;
+}
+
+/* =========================================
+   Code
+========================================= */
+.tiptap-editor pre,
+.tiptap-editor-modern .ProseMirror pre {
+  background: hsl(var(--muted));
+  border-radius: 0.75rem;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1.2rem 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.tiptap-editor code,
+.tiptap-editor-modern .ProseMirror code {
+  background: hsl(var(--muted));
+  border-radius: 0.35rem;
+  padding: 0.2rem 0.4rem;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.85rem;
+}
+
+.tiptap-editor pre code,
+.tiptap-editor-modern .ProseMirror pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* =========================================
+   Links
+========================================= */
+.tiptap-editor a,
+.tiptap-editor-modern .ProseMirror a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: opacity 0.2s ease;
+}
+
+.tiptap-editor a:hover,
+.tiptap-editor-modern .ProseMirror a:hover {
+  opacity: 0.8;
+}
+
+/* =========================================
+   Images
+========================================= */
+.tiptap-editor img,
+.tiptap-editor-modern .ProseMirror img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1.2rem 0;
+  border-radius: 0.75rem;
+  border: 1px solid hsl(var(--border));
+}
+
+/* =========================================
+   Horizontal rule
+========================================= */
+.tiptap-editor hr,
+.tiptap-editor-modern .ProseMirror hr {
+  margin: 2rem 0;
+  border: none;
+  border-top: 1px solid hsl(var(--border));
+}
+
+/* =========================================
+   Checklist
+========================================= */
+.tiptap-editor ul[data-type="taskList"],
+.tiptap-editor-modern .ProseMirror ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.tiptap-editor li[data-type="taskItem"],
+.tiptap-editor-modern .ProseMirror li[data-type="taskItem"] {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.tiptap-editor li[data-type="taskItem"] > label,
+.tiptap-editor-modern .ProseMirror li[data-type="taskItem"] > label {
+  margin-top: 0.15rem;
+  flex: 0 0 auto;
+}
+
+.tiptap-editor li[data-type="taskItem"] > div,
+.tiptap-editor-modern .ProseMirror li[data-type="taskItem"] > div {
+  flex: 1;
+}
+
+.tiptap-editor input[type="checkbox"],
+.tiptap-editor-modern .ProseMirror input[type="checkbox"] {
+  cursor: pointer;
+}
+
+/* =========================================
+   Highlight
+========================================= */
+.tiptap-editor mark,
+.tiptap-editor-modern .ProseMirror mark {
+  background: #fef08a;
+  border-radius: 0.2rem;
+  padding: 0.1rem 0.25rem;
+}
+
+/* =========================================
+   Placeholder
+========================================= */
+.tiptap-editor.is-empty::before,
+.tiptap-editor-modern .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+
+/* =========================================
+   Seleção visível
+========================================= */
+.tiptap-editor .ProseMirror::selection,
+.tiptap-editor-modern .ProseMirror::selection,
+.tiptap-editor .ProseMirror *::selection,
+.tiptap-editor-modern .ProseMirror *::selection {
+  background: rgb(144, 185, 250);
+  color: inherit;
+}
+
+/* =========================================
+   Scrollbar
+========================================= */
+.tiptap-editor::-webkit-scrollbar,
+.tiptap-editor-modern .ProseMirror::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.tiptap-editor::-webkit-scrollbar-thumb,
+.tiptap-editor-modern .ProseMirror::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 999px;
+}
+
+.tiptap-editor::-webkit-scrollbar-track,
+.tiptap-editor-modern .ProseMirror::-webkit-scrollbar-track {
+  background: transparent;
+}

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Página de Vendas</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      background: #f7f8fc;
+      color: #1f2937;
+      line-height: 1.6;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: linear-gradient(135deg, #111827, #2563eb);
+      color: #fff;
+      padding: 80px 0;
+    }
+
+    .hero {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 40px;
+      justify-content: space-between;
+    }
+
+    .hero-text {
+      flex: 1 1 520px;
+    }
+
+    .hero-text span {
+      display: inline-block;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      margin-bottom: 18px;
+    }
+
+    .hero h1 {
+      font-size: 48px;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+
+    .hero p {
+      font-size: 18px;
+      color: #e5e7eb;
+      margin-bottom: 28px;
+      max-width: 620px;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .btn {
+      display: inline-block;
+      text-decoration: none;
+      padding: 14px 26px;
+      border-radius: 10px;
+      font-weight: bold;
+      transition: 0.25s ease;
+    }
+
+    .btn-primary {
+      background: #f59e0b;
+      color: #111827;
+    }
+
+    .btn-primary:hover {
+      background: #fbbf24;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .hero-card {
+      flex: 1 1 320px;
+      background: #fff;
+      color: #111827;
+      padding: 32px;
+      border-radius: 18px;
+      box-shadow: 0 20px 45px rgba(0,0,0,0.18);
+    }
+
+    .hero-card h3 {
+      margin-bottom: 14px;
+      font-size: 24px;
+    }
+
+    .hero-card ul {
+      list-style: none;
+      margin: 22px 0;
+    }
+
+    .hero-card li {
+      padding: 10px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .hero-card .price {
+      font-size: 42px;
+      font-weight: bold;
+      color: #2563eb;
+    }
+
+    .section {
+      padding: 70px 0;
+    }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 42px;
+    }
+
+    .section-title h2 {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+
+    .section-title p {
+      color: #6b7280;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      background: #fff;
+      padding: 28px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(17,24,39,0.06);
+    }
+
+    .card h3 {
+      margin-bottom: 14px;
+      font-size: 22px;
+    }
+
+    .highlight {
+      background: #eff6ff;
+    }
+
+    .testimonials {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .testimonial strong {
+      display: block;
+      margin-top: 18px;
+      color: #111827;
+    }
+
+    .pricing {
+      background: linear-gradient(135deg, #111827, #1d4ed8);
+      color: #fff;
+      border-radius: 24px;
+      padding: 50px 30px;
+      text-align: center;
+    }
+
+    .pricing .price {
+      font-size: 56px;
+      font-weight: bold;
+      margin: 16px 0;
+    }
+
+    .pricing p {
+      color: #dbeafe;
+      margin-bottom: 22px;
+    }
+
+    .faq {
+      max-width: 860px;
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .faq-item {
+      background: #fff;
+      border-radius: 14px;
+      padding: 22px;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.05);
+    }
+
+    .faq-item h4 {
+      margin-bottom: 8px;
+      font-size: 18px;
+    }
+
+    .cta-final {
+      text-align: center;
+      background: #fff;
+      padding: 60px 30px;
+      border-radius: 24px;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.05);
+    }
+
+    .cta-final h2 {
+      font-size: 38px;
+      margin-bottom: 12px;
+    }
+
+    .cta-final p {
+      color: #6b7280;
+      max-width: 700px;
+      margin: 0 auto 24px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 28px 20px 40px;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 36px;
+      }
+
+      .section-title h2,
+      .cta-final h2 {
+        font-size: 30px;
+      }
+
+      .pricing .price,
+      .hero-card .price {
+        font-size: 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container hero">
+      <div class="hero-text">
+        <span>Oferta especial por tempo limitado</span>
+        <h1>Transforme seus resultados com uma página que vende por você</h1>
+        <p>
+          Apresente seu produto ou serviço de forma profissional, aumente sua credibilidade
+          e converta mais visitantes em clientes com uma estrutura pronta para vender.
+        </p>
+        <div class="buttons">
+          <a href="#oferta" class="btn btn-primary">Quero aproveitar agora</a>
+          <a href="#beneficios" class="btn btn-secondary">Ver benefícios</a>
+        </div>
+      </div>
+
+      <div class="hero-card">
+        <h3>O que você recebe</h3>
+        <p class="price">R$ 97</p>
+        <ul>
+          <li>Layout moderno e responsivo</li>
+          <li>Estrutura focada em conversão</li>
+          <li>Seções estratégicas de venda</li>
+          <li>Chamada para ação destacada</li>
+          <li>Fácil edição e personalização</li>
+        </ul>
+        <a href="#oferta" class="btn btn-primary" style="width: 100%; text-align: center;">Garantir acesso</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="section" id="beneficios">
+    <div class="container">
+      <div class="section-title">
+        <h2>Por que esta página converte mais?</h2>
+        <p>
+          Cada bloco foi pensado para conduzir o visitante até a decisão de compra com clareza,
+          confiança e objetividade.
+        </p>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <h3>Mensagem clara</h3>
+          <p>Seu cliente entende rapidamente o valor da sua oferta e por que deve agir agora.</p>
+        </div>
+        <div class="card highlight">
+          <h3>Design profissional</h3>
+          <p>Uma apresentação visual moderna aumenta a confiança e melhora a percepção do seu produto.</p>
+        </div>
+        <div class="card">
+          <h3>Estrutura persuasiva</h3>
+          <p>Benefícios, prova social, oferta e CTA organizados para maximizar conversões.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-title">
+        <h2>Ideal para quem quer vender mais</h2>
+        <p>Use este modelo para infoprodutos, serviços, consultorias, mentorias, eventos e ofertas digitais.</p>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <h3>Produtores digitais</h3>
+          <p>Venda cursos, e-books, mentorias e treinamentos com uma página mais profissional.</p>
+        </div>
+        <div class="card">
+          <h3>Prestadores de serviço</h3>
+          <p>Apresente sua proposta de forma objetiva e aumente a taxa de contatos qualificados.</p>
+        </div>
+        <div class="card">
+          <h3>Negócios locais</h3>
+          <p>Divulgue promoções, pacotes e diferenciais com uma comunicação mais clara e direta.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-title">
+        <h2>Quem já aplicou, aprovou</h2>
+        <p>Exemplos de depoimentos para reforçar a confiança na sua oferta.</p>
+      </div>
+
+      <div class="testimonials">
+        <div class="card testimonial">
+          <p>“Depois que organizei minha oferta com essa estrutura, minhas conversões melhoraram muito.”</p>
+          <strong>Mariana Silva — Consultora</strong>
+        </div>
+        <div class="card testimonial">
+          <p>“A página ficou bonita, clara e fácil de adaptar. Economizei tempo e ganhei mais profissionalismo.”</p>
+          <strong>Lucas Andrade — Produtor Digital</strong>
+        </div>
+        <div class="card testimonial">
+          <p>“Usei o modelo para vender um serviço premium e a percepção de valor aumentou bastante.”</p>
+          <strong>Fernanda Costa — Estrategista</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="oferta">
+    <div class="container">
+      <div class="pricing">
+        <h2>Oferta especial</h2>
+        <p>Adquira agora e comece a usar imediatamente na sua estratégia de vendas.</p>
+        <div class="price">R$ 97</div>
+        <p>Pagamento único • acesso imediato • personalização simples</p>
+        <a href="#" class="btn btn-primary">Comprar agora</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-title">
+        <h2>Perguntas frequentes</h2>
+      </div>
+
+      <div class="faq">
+        <div class="faq-item">
+          <h4>Preciso saber programar para editar?</h4>
+          <p>Não. Basta trocar textos, links e informações principais no arquivo HTML.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Funciona no celular?</h4>
+          <p>Sim. A estrutura é responsiva e se adapta a diferentes tamanhos de tela.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Posso usar para qualquer nicho?</h4>
+          <p>Sim. Você pode adaptar a comunicação para produtos, serviços, eventos e ofertas diversas.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="cta-final">
+        <h2>Está pronto para vender com mais profissionalismo?</h2>
+        <p>
+          Use esta estrutura como base, personalize com sua oferta e publique uma página capaz
+          de apresentar valor e incentivar a ação do cliente.
+        </p>
+        <a href="#oferta" class="btn btn-primary">Quero minha página agora</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2026 Sua Marca. Todos os direitos reservados.</p>
+  </footer>
+</body>
+</html>

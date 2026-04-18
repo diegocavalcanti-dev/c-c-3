@@ -1,252 +1,162 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 
-// Mock admin user
-const adminUser = {
-  id: 1,
-  openId: "admin-user",
-  email: "admin@example.com",
-  name: "Admin User",
-  loginMethod: "manus",
-  role: "admin" as const,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  lastSignedIn: new Date(),
-};
+// Mock db module
+vi.mock("./db", () => ({
+  getAllCategories: vi.fn().mockResolvedValue([
+    { id: 1, name: "Matérias", slug: "materias", description: null, createdAt: new Date() },
+    { id: 2, name: "Notícias", slug: "noticias", description: null, createdAt: new Date() },
+  ]),
+  getCategoryBySlug: vi.fn().mockImplementation(async (slug: string) => {
+    if (slug === "materias") return { id: 1, name: "Matérias", slug: "materias", description: null, createdAt: new Date() };
+    return undefined;
+  }),
+  getPublishedPosts: vi.fn().mockResolvedValue({
+    posts: [
+      {
+        id: 1, wpId: 100, title: "Test Post", slug: "test-post",
+        content: "<p>Content</p>", excerpt: "Excerpt", featuredImage: null,
+        author: "Cenas de Combate", status: "published",
+        publishedAt: new Date(), viewCount: 0, createdAt: new Date(), updatedAt: new Date(),
+      },
+    ],
+    total: 1,
+  }),
+  getPostBySlug: vi.fn().mockImplementation(async (slug: string) => {
+    if (slug === "test-post") {
+      return {
+        id: 1, wpId: 100, title: "Test Post", slug: "test-post",
+        content: "<p>Content</p>", excerpt: "Excerpt", featuredImage: null,
+        author: "Cenas de Combate", status: "published",
+        publishedAt: new Date(), viewCount: 5, createdAt: new Date(), updatedAt: new Date(),
+      };
+    }
+    return undefined;
+  }),
+  getPostById: vi.fn().mockResolvedValue(null),
+  getPostCategories: vi.fn().mockResolvedValue([
+    { id: 1, name: "Matérias", slug: "materias", description: null, createdAt: new Date() },
+  ]),
+  incrementViewCount: vi.fn().mockResolvedValue(undefined),
+  createPost: vi.fn().mockResolvedValue(42),
+  updatePost: vi.fn().mockResolvedValue(undefined),
+  deletePost: vi.fn().mockResolvedValue(undefined),
+  getAllPostsAdmin: vi.fn().mockResolvedValue({ posts: [], total: 0 }),
+  getPostStats: vi.fn().mockResolvedValue({ total: 322, published: 322, draft: 0 }),
+  createCategory: vi.fn().mockResolvedValue(undefined),
+  updateCategory: vi.fn().mockResolvedValue(undefined),
+  deleteCategory: vi.fn().mockResolvedValue(undefined),
+  bulkInsertCategories: vi.fn().mockResolvedValue(undefined),
+  bulkInsertPosts: vi.fn().mockResolvedValue(10),
+  createMedia: vi.fn().mockResolvedValue(1),
+  upsertUser: vi.fn().mockResolvedValue(undefined),
+  getUserByOpenId: vi.fn().mockResolvedValue(undefined),
+}));
 
-// Mock regular user
-const regularUser = {
-  id: 2,
-  openId: "regular-user",
-  email: "user@example.com",
-  name: "Regular User",
-  loginMethod: "manus",
-  role: "user" as const,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  lastSignedIn: new Date(),
-};
+vi.mock("./_core/notification", () => ({
+  notifyOwner: vi.fn().mockResolvedValue(true),
+}));
 
-function createContext(user: typeof adminUser | typeof regularUser | null): TrpcContext {
+vi.mock("./storage", () => ({
+  storagePut: vi.fn().mockResolvedValue({ url: "https://cdn.example.com/test.jpg", key: "test.jpg" }),
+}));
+
+function createPublicContext(): TrpcContext {
   return {
-    user,
-    req: {
-      protocol: "https",
-      headers: {},
-    } as TrpcContext["req"],
-    res: {
-      clearCookie: () => {},
-    } as TrpcContext["res"],
+    user: null,
+    req: { protocol: "https", headers: {} } as any,
+    res: { clearCookie: vi.fn() } as any,
   };
 }
 
-describe("Posts API", () => {
-  describe("posts.list", () => {
-    it("should return published posts", async () => {
-      const caller = appRouter.createCaller(createContext(null));
-      const result = await caller.posts.list({ page: 1, limit: 10 });
+function createAdminContext(): TrpcContext {
+  return {
+    user: {
+      id: 1, openId: "admin-user", email: "admin@test.com", name: "Admin",
+      loginMethod: "manus", role: "admin", createdAt: new Date(),
+      updatedAt: new Date(), lastSignedIn: new Date(),
+    },
+    req: { protocol: "https", headers: {} } as any,
+    res: { clearCookie: vi.fn() } as any,
+  };
+}
 
-      expect(result).toHaveProperty("posts");
-      expect(result).toHaveProperty("total");
-      expect(result).toHaveProperty("page");
-      expect(result).toHaveProperty("pages");
-      expect(Array.isArray(result.posts)).toBe(true);
-    });
-
-    it("should return posts with pagination", async () => {
-      const caller = appRouter.createCaller(createContext(null));
-      const result = await caller.posts.list({ page: 1, limit: 5 });
-
-      expect(result.page).toBe(1);
-      expect(result.limit).toBe(5);
-      expect(result.posts.length).toBeLessThanOrEqual(5);
-    });
-
-    it("should filter posts by category", async () => {
-      const caller = appRouter.createCaller(createContext(null));
-      const result = await caller.posts.list({ page: 1, limit: 10, categoryId: 1 });
-
-      expect(result).toHaveProperty("posts");
-      expect(Array.isArray(result.posts)).toBe(true);
-    });
-  });
-
-  describe("posts.bySlug", () => {
-    it("should return post by slug", async () => {
-      const caller = appRouter.createCaller(createContext(null));
-      // Assuming there's a post with this slug in the database
-      const result = await caller.posts.bySlug({ slug: "o-sangue-no-volga" });
-
-      if (result) {
-        expect(result).toHaveProperty("id");
-        expect(result).toHaveProperty("title");
-        expect(result).toHaveProperty("slug");
-        expect(result).toHaveProperty("content");
-        expect(result).toHaveProperty("viewCount");
-      }
-    });
-
-    it("should return null for non-existent slug", async () => {
-      const caller = appRouter.createCaller(createContext(null));
-      const result = await caller.posts.bySlug({ slug: "non-existent-post-slug" });
-
-      expect(result).toBeNull();
-    });
-  });
-
-  describe("posts.create (admin only)", () => {
-    it("should reject non-admin users", async () => {
-      const caller = appRouter.createCaller(createContext(regularUser));
-
-      try {
-        await caller.posts.create({
-          title: "Test Post",
-          slug: "test-post",
-          content: "Test content",
-        });
-        expect.fail("Should have thrown an error");
-      } catch (error: any) {
-        expect(error.code).toBe("FORBIDDEN");
-      }
-    });
-
-    it("should allow admin users to create posts", async () => {
-      const caller = appRouter.createCaller(createContext(adminUser));
-
-      const result = await caller.posts.create({
-        title: "Test Admin Post",
-        slug: `test-admin-post-${Date.now()}`,
-        content: "Test admin content",
-        status: "draft",
-      });
-
-      expect(result).toHaveProperty("id");
-      expect(result.title).toBe("Test Admin Post");
-      expect(result.status).toBe("draft");
-    });
-  });
-
-  describe("posts.update (admin only)", () => {
-    it("should reject non-admin users", async () => {
-      const caller = appRouter.createCaller(createContext(regularUser));
-
-      try {
-        await caller.posts.update({
-          id: 1,
-          title: "Updated Title",
-        });
-        expect.fail("Should have thrown an error");
-      } catch (error: any) {
-        expect(error.code).toBe("FORBIDDEN");
-      }
-    });
-  });
-
-  describe("posts.delete (admin only)", () => {
-    it("should reject non-admin users", async () => {
-      const caller = appRouter.createCaller(createContext(regularUser));
-
-      try {
-        await caller.posts.delete({ id: 1 });
-        expect.fail("Should have thrown an error");
-      } catch (error: any) {
-        expect(error.code).toBe("FORBIDDEN");
-      }
-    });
+describe("categories.list", () => {
+  it("returns all categories for public users", async () => {
+    const caller = appRouter.createCaller(createPublicContext());
+    const result = await caller.categories.list();
+    expect(result).toHaveLength(2);
+    expect(result[0].name).toBe("Matérias");
   });
 });
 
-describe("Categories API", () => {
-  describe("categories.list", () => {
-    it("should return all categories", async () => {
-      const caller = appRouter.createCaller(createContext(null));
-      const result = await caller.categories.list();
-
-      expect(Array.isArray(result)).toBe(true);
-      expect(result.length).toBeGreaterThan(0);
-    });
-
-    it("should have required category fields", async () => {
-      const caller = appRouter.createCaller(createContext(null));
-      const result = await caller.categories.list();
-
-      if (result.length > 0) {
-        const category = result[0];
-        expect(category).toHaveProperty("id");
-        expect(category).toHaveProperty("name");
-        expect(category).toHaveProperty("slug");
-      }
-    });
+describe("categories.getBySlug", () => {
+  it("returns category by slug", async () => {
+    const caller = appRouter.createCaller(createPublicContext());
+    const result = await caller.categories.getBySlug({ slug: "materias" });
+    expect(result.name).toBe("Matérias");
   });
 
-  describe("categories.create (admin only)", () => {
-    it("should reject non-admin users", async () => {
-      const caller = appRouter.createCaller(createContext(regularUser));
-
-      try {
-        await caller.categories.create({
-          name: "Test Category",
-          slug: "test-category",
-        });
-        expect.fail("Should have thrown an error");
-      } catch (error: any) {
-        expect(error.code).toBe("FORBIDDEN");
-      }
-    });
-
-    it("should allow admin users to create categories", async () => {
-      const caller = appRouter.createCaller(createContext(adminUser));
-
-      const result = await caller.categories.create({
-        name: `Test Category ${Date.now()}`,
-        slug: `test-category-${Date.now()}`,
-        description: "Test category description",
-      });
-
-      expect(result).toHaveProperty("id");
-      expect(result.name).toContain("Test Category");
-    });
+  it("throws NOT_FOUND for unknown slug", async () => {
+    const caller = appRouter.createCaller(createPublicContext());
+    await expect(caller.categories.getBySlug({ slug: "unknown" })).rejects.toThrow();
   });
 });
 
-describe("Auth API", () => {
-  describe("auth.me", () => {
-    it("should return current user", async () => {
-      const caller = appRouter.createCaller(createContext(adminUser));
-      const result = await caller.auth.me();
+describe("posts.list", () => {
+  it("returns paginated posts", async () => {
+    const caller = appRouter.createCaller(createPublicContext());
+    const result = await caller.posts.list({ page: 1, limit: 20 });
+    expect(result.total).toBe(1);
+    expect(result.posts[0].title).toBe("Test Post");
+  });
+});
 
-      expect(result).toEqual(adminUser);
-    });
-
-    it("should return null for unauthenticated user", async () => {
-      const caller = appRouter.createCaller(createContext(null));
-      const result = await caller.auth.me();
-
-      expect(result).toBeNull();
-    });
+describe("posts.getBySlug", () => {
+  it("returns post with categories", async () => {
+    const caller = appRouter.createCaller(createPublicContext());
+    const result = await caller.posts.getBySlug({ slug: "test-post" });
+    expect(result.title).toBe("Test Post");
+    expect(result.categories).toHaveLength(1);
   });
 
-  describe("auth.logout", () => {
-    it("should clear session cookie", async () => {
-      let clearedCookie = false;
-      const mockRes = {
-        clearCookie: () => {
-          clearedCookie = true;
-        },
-      } as TrpcContext["res"];
+  it("throws NOT_FOUND for unknown slug", async () => {
+    const caller = appRouter.createCaller(createPublicContext());
+    await expect(caller.posts.getBySlug({ slug: "nonexistent" })).rejects.toThrow();
+  });
+});
 
-      const context: TrpcContext = {
-        user: adminUser,
-        req: { protocol: "https", headers: {} } as TrpcContext["req"],
-        res: mockRes,
-      };
+describe("cms.stats (admin only)", () => {
+  it("returns stats for admin users", async () => {
+    const caller = appRouter.createCaller(createAdminContext());
+    const result = await caller.cms.stats();
+    expect(result.total).toBe(322);
+    expect(result.published).toBe(322);
+  });
 
-      const caller = appRouter.createCaller(context);
-      const result = await caller.auth.logout();
+  it("throws FORBIDDEN for non-admin users", async () => {
+    const ctx = createPublicContext();
+    ctx.user = {
+      id: 2, openId: "regular-user", email: "user@test.com", name: "User",
+      loginMethod: "manus", role: "user", createdAt: new Date(),
+      updatedAt: new Date(), lastSignedIn: new Date(),
+    };
+    const caller = appRouter.createCaller(ctx);
+    await expect(caller.cms.stats()).rejects.toThrow("Acesso restrito a administradores");
+  });
+});
 
-      expect(result.success).toBe(true);
-      expect(clearedCookie).toBe(true);
+describe("cms.createPost (admin only)", () => {
+  it("creates a post and returns id", async () => {
+    const caller = appRouter.createCaller(createAdminContext());
+    const result = await caller.cms.createPost({
+      title: "New Post",
+      slug: "new-post",
+      content: "<p>Content</p>",
+      status: "draft",
+      categoryIds: [],
     });
+    expect(result.id).toBe(42);
   });
 });

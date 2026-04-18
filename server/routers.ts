@@ -1,305 +1,295 @@
+import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
-import { z } from "zod";
+import { notifyOwner } from "./_core/notification";
 import {
-  getPublishedPosts,
-  getPostBySlug,
-  getAllCategories,
-  getCategoriesForPost,
-  incrementPostViewCount,
+  getAllCategories, getCategoryBySlug, createCategory, updateCategory, deleteCategory,
+  getPublishedPosts, getPostBySlug, getPostById, getPostCategories, incrementViewCount,
+  createPost, updatePost, deletePost, getAllPostsAdmin, getPostStats,
+  bulkInsertCategories, bulkInsertPosts, createMedia,
 } from "./db";
-import { getDb } from "./db";
-import { posts, categories, postCategories, InsertPost, InsertCategory } from "../drizzle/schema";
-import { eq, and } from "drizzle-orm";
-import { TRPCError } from "@trpc/server";
+import { storagePut } from "./storage";
+import { nanoid } from "nanoid";
 
-// Admin-only procedure
-const adminProcedure = protectedProcedure.use(async ({ ctx, next }) => {
-  if (ctx.user?.role !== "admin") {
-    throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+// Admin guard middleware
+const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (ctx.user.role !== 'admin') {
+    throw new TRPCError({ code: 'FORBIDDEN', message: 'Acesso restrito a administradores' });
   }
   return next({ ctx });
 });
 
 export const appRouter = router({
   system: systemRouter,
+
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
-      return {
-        success: true,
-      } as const;
+      return { success: true } as const;
     }),
   }),
 
-  posts: router({
-    list: publicProcedure
-      .input(
-        z.object({
-          page: z.number().int().positive().default(1),
-          limit: z.number().int().positive().max(100).default(10),
-          categoryId: z.number().int().positive().optional(),
-          search: z.string().optional(),
-        })
-      )
-      .query(async ({ input }) => {
-        const { posts, total } = await getPublishedPosts({
-          page: input.page,
-          limit: input.limit,
-          categoryId: input.categoryId,
-          search: input.search,
-        });
-        return {
-          posts,
-          total,
-          page: input.page,
-          limit: input.limit,
-          pages: Math.ceil(total / input.limit),
-        };
-      }),
-
-    bySlug: publicProcedure
-      .input(z.object({ slug: z.string() }))
-      .query(async ({ input }) => {
-        const post = await getPostBySlug(input.slug);
-        if (!post) return null;
-        const categories = await getCategoriesForPost(post.id);
-        // Increment view count
-        await incrementPostViewCount(post.id);
-        return { ...post, categories };
-      }),
-
-    // Admin: Create post
-    create: adminProcedure
-      .input(
-        z.object({
-          title: z.string().min(1),
-          slug: z.string().min(1),
-          content: z.string().min(1),
-          excerpt: z.string().optional(),
-          featuredImage: z.string().optional(),
-          status: z.enum(["draft", "published", "archived"]).default("draft"),
-          author: z.string().optional(),
-          categoryIds: z.array(z.number()).optional(),
-        })
-      )
-      .mutation(async ({ input }) => {
-        const db = await getDb();
-        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-
-        try {
-          const result = await db.insert(posts).values({
-            title: input.title,
-            slug: input.slug,
-            content: input.content,
-            excerpt: input.excerpt,
-            featuredImage: input.featuredImage,
-            status: input.status,
-            author: input.author,
-            publishedAt: input.status === "published" ? new Date() : null,
-          });
-
-          const postId = (result as any).insertId;
-
-          // Associate categories
-          if (input.categoryIds && input.categoryIds.length > 0) {
-            for (const categoryId of input.categoryIds) {
-              await db.insert(postCategories).values({
-                postId,
-                categoryId,
-              });
-            }
-          }
-
-          return { id: postId, ...input };
-        } catch (error) {
-          console.error("Error creating post:", error);
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        }
-      }),
-
-    // Admin: Update post
-    update: adminProcedure
-      .input(
-        z.object({
-          id: z.number(),
-          title: z.string().min(1).optional(),
-          slug: z.string().min(1).optional(),
-          content: z.string().min(1).optional(),
-          excerpt: z.string().optional(),
-          featuredImage: z.string().optional(),
-          status: z.enum(["draft", "published", "archived"]).optional(),
-          author: z.string().optional(),
-          categoryIds: z.array(z.number()).optional(),
-        })
-      )
-      .mutation(async ({ input }) => {
-        const db = await getDb();
-        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-
-        try {
-          const { id, categoryIds, ...updateData } = input;
-
-          // Update post
-          await db.update(posts).set({
-            ...updateData,
-            publishedAt:
-              updateData.status === "published"
-                ? new Date()
-                : updateData.status === "draft"
-                  ? null
-                  : undefined,
-          }).where(eq(posts.id, id));
-
-          // Update categories if provided
-          if (categoryIds) {
-            await db.delete(postCategories).where(eq(postCategories.postId, id));
-            for (const categoryId of categoryIds) {
-              await db.insert(postCategories).values({
-                postId: id,
-                categoryId,
-              });
-            }
-          }
-
-          return { id: input.id, title: input.title, slug: input.slug, content: input.content, excerpt: input.excerpt, featuredImage: input.featuredImage, status: input.status, author: input.author, categoryIds: input.categoryIds };
-        } catch (error) {
-          console.error("Error updating post:", error);
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        }
-      }),
-
-    // Admin: Delete post
-    delete: adminProcedure
-      .input(z.object({ id: z.number() }))
-      .mutation(async ({ input }) => {
-        const db = await getDb();
-        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-
-        try {
-          await db.delete(postCategories).where(eq(postCategories.postId, input.id));
-          await db.delete(posts).where(eq(posts.id, input.id));
-          return { success: true };
-        } catch (error) {
-          console.error("Error deleting post:", error);
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        }
-      }),
-
-    // Admin: List all posts (including drafts)
-    adminList: adminProcedure
-      .input(
-        z.object({
-          page: z.number().int().positive().default(1),
-          limit: z.number().int().positive().max(100).default(10),
-          status: z.enum(["draft", "published", "archived"]).optional(),
-        })
-      )
-      .query(async ({ input }) => {
-        const db = await getDb();
-        if (!db) return { posts: [], total: 0 };
-
-        const page = input.page || 1;
-        const limit = input.limit || 10;
-        const offset = (page - 1) * limit;
-
-        const whereCondition = input.status ? eq(posts.status, input.status) : undefined;
-
-        const countResult = await db
-          .select({ count: posts.id })
-          .from(posts)
-          .where(whereCondition);
-
-        const total = countResult.length;
-
-        const result = await db
-          .select()
-          .from(posts)
-          .where(whereCondition)
-          .orderBy(posts.createdAt)
-          .limit(limit)
-          .offset(offset);
-
-        return { posts: result, total, page, limit, pages: Math.ceil(total / limit) };
-      }),
-  }),
+  // ─── Categories ────────────────────────────────────────────────────────────
 
   categories: router({
     list: publicProcedure.query(async () => {
-      return await getAllCategories();
+      return getAllCategories();
     }),
 
-    // Admin: Create category
+    getBySlug: publicProcedure
+      .input(z.object({ slug: z.string() }))
+      .query(async ({ input }) => {
+        const cat = await getCategoryBySlug(input.slug);
+        if (!cat) throw new TRPCError({ code: 'NOT_FOUND' });
+        return cat;
+      }),
+
     create: adminProcedure
-      .input(
-        z.object({
-          name: z.string().min(1),
-          slug: z.string().min(1),
-          description: z.string().optional(),
-        })
-      )
+      .input(z.object({ name: z.string().min(1), slug: z.string().min(1), description: z.string().optional() }))
       .mutation(async ({ input }) => {
-        const db = await getDb();
-        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-
-        try {
-          const result = await db.insert(categories).values({
-            name: input.name,
-            slug: input.slug,
-            description: input.description,
-          });
-
-          const categoryId = (result as any).insertId;
-          return { id: categoryId, name: input.name, slug: input.slug, description: input.description };
-        } catch (error) {
-          console.error("Error creating category:", error);
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        }
+        await createCategory(input);
+        return { success: true };
       }),
 
-    // Admin: Update category
     update: adminProcedure
-      .input(
-        z.object({
-          id: z.number(),
-          name: z.string().min(1).optional(),
-          slug: z.string().min(1).optional(),
-          description: z.string().optional(),
-        })
-      )
+      .input(z.object({ id: z.number(), name: z.string().optional(), slug: z.string().optional(), description: z.string().optional() }))
       .mutation(async ({ input }) => {
-        const db = await getDb();
-        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-
-        try {
-          const { id, ...updateData } = input;
-          await db.update(categories).set(updateData).where(eq(categories.id, id));
-          return { id: input.id, name: input.name, slug: input.slug, description: input.description };
-        } catch (error) {
-          console.error("Error updating category:", error);
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        }
+        const { id, ...data } = input;
+        await updateCategory(id, data);
+        return { success: true };
       }),
 
-    // Admin: Delete category
     delete: adminProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
-        const db = await getDb();
-        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        await deleteCategory(input.id);
+        return { success: true };
+      }),
+  }),
 
-        try {
-          await db.delete(postCategories).where(eq(postCategories.categoryId, input.id));
-          await db.delete(categories).where(eq(categories.id, input.id));
-          return { success: true };
-        } catch (error) {
-          console.error("Error deleting category:", error);
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+  // ─── Posts (Public) ────────────────────────────────────────────────────────
+
+  posts: router({
+    list: publicProcedure
+      .input(z.object({
+        page: z.number().default(1),
+        limit: z.number().default(20),
+        categorySlug: z.string().optional(),
+        search: z.string().optional(),
+      }))
+      .query(async ({ input }) => {
+        return getPublishedPosts(input);
+      }),
+
+    getBySlug: publicProcedure
+      .input(z.object({ slug: z.string() }))
+      .query(async ({ input }) => {
+        const post = await getPostBySlug(input.slug);
+        if (!post || post.status !== 'published') throw new TRPCError({ code: 'NOT_FOUND' });
+        const postCats = await getPostCategories(post.id);
+        await incrementViewCount(post.id);
+        return { ...post, categories: postCats };
+      }),
+
+    getFeatured: publicProcedure.query(async () => {
+      const result = await getPublishedPosts({ page: 1, limit: 6 });
+      return result.posts;
+    }),
+
+    getLatest: publicProcedure
+      .input(z.object({ limit: z.number().default(12) }))
+      .query(async ({ input }) => {
+        const result = await getPublishedPosts({ page: 1, limit: input.limit });
+        return result.posts;
+      }),
+  }),
+
+  // ─── CMS (Admin) ───────────────────────────────────────────────────────────
+
+  cms: router({
+    stats: adminProcedure.query(async () => {
+      const [stats, cats] = await Promise.all([getPostStats(), getAllCategories()]);
+      return { ...stats, categories: cats.length };
+    }),
+
+    listPosts: adminProcedure
+      .input(z.object({
+        page: z.number().default(1),
+        limit: z.number().default(20),
+        status: z.string().optional(),
+        search: z.string().optional(),
+      }))
+      .query(async ({ input }) => {
+        return getAllPostsAdmin(input);
+      }),
+
+    getPost: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        const post = await getPostById(input.id);
+        if (!post) throw new TRPCError({ code: 'NOT_FOUND' });
+        const cats = await getPostCategories(post.id);
+        return { ...post, categories: cats };
+      }),
+
+    createPost: adminProcedure
+      .input(z.object({
+        title: z.string().min(1),
+        slug: z.string().min(1),
+        content: z.string(),
+        excerpt: z.string().optional(),
+        featuredImage: z.string().optional(),
+        status: z.enum(['draft', 'published', 'archived']).default('draft'),
+        author: z.string().optional(),
+        categoryIds: z.array(z.number()).default([]),
+        publishedAt: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { categoryIds, publishedAt, ...postData } = input;
+        const insertData = {
+          ...postData,
+          publishedAt: publishedAt ? new Date(publishedAt) : (postData.status === 'published' ? new Date() : undefined),
+        };
+        const id = await createPost(insertData, categoryIds);
+
+        if (postData.status === 'published') {
+          try {
+            await notifyOwner({
+              title: `Novo artigo publicado: ${postData.title}`,
+              content: `Um novo artigo foi publicado no Cenas de Combate.\n\nTítulo: ${postData.title}\nAutor: ${postData.author || 'Cenas de Combate'}`,
+            });
+          } catch (e) {
+            console.error('Failed to notify owner:', e);
+          }
         }
+
+        return { id };
+      }),
+
+    updatePost: adminProcedure
+      .input(z.object({
+        id: z.number(),
+        title: z.string().min(1).optional(),
+        slug: z.string().optional(),
+        content: z.string().optional(),
+        excerpt: z.string().optional(),
+        featuredImage: z.string().optional().nullable(),
+        status: z.enum(['draft', 'published', 'archived']).optional(),
+        author: z.string().optional(),
+        categoryIds: z.array(z.number()).optional(),
+        publishedAt: z.string().optional().nullable(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, categoryIds, publishedAt, ...postData } = input;
+
+        const existing = await getPostById(id);
+        const wasPublished = existing?.status === 'published';
+        const isNowPublished = postData.status === 'published';
+
+        const updateData: any = { ...postData };
+        if (publishedAt !== undefined) {
+          updateData.publishedAt = publishedAt ? new Date(publishedAt) : null;
+        }
+        if (isNowPublished && !wasPublished && !updateData.publishedAt) {
+          updateData.publishedAt = new Date();
+        }
+
+        await updatePost(id, updateData, categoryIds);
+
+        if (isNowPublished && !wasPublished) {
+          try {
+            await notifyOwner({
+              title: `Artigo publicado: ${postData.title || existing?.title}`,
+              content: `Um artigo foi publicado no Cenas de Combate.\n\nTítulo: ${postData.title || existing?.title}`,
+            });
+          } catch (e) {
+            console.error('Failed to notify owner:', e);
+          }
+        }
+
+        return { success: true };
+      }),
+
+    deletePost: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await deletePost(input.id);
+        return { success: true };
+      }),
+
+    uploadImage: adminProcedure
+      .input(z.object({
+        filename: z.string(),
+        contentType: z.string(),
+        dataBase64: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const { filename, contentType, dataBase64 } = input;
+        const buffer = Buffer.from(dataBase64, 'base64');
+        const ext = filename.split('.').pop() || 'jpg';
+        const key = `cms-uploads/${nanoid()}.${ext}`;
+        const { url } = await storagePut(key, buffer, contentType);
+        await createMedia({ s3Key: key, s3Url: url, filename, mimeType: contentType, fileSize: buffer.length });
+        return { url };
+      }),
+
+    listMedia: adminProcedure.query(async () => {
+      // TODO: Implementar query para listar mídia
+      return [];
+    }),
+
+    deleteMedia: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        // TODO: Implementar delete de mídia
+        return { success: true };
+      }),
+
+    // Bulk import from WordPress data
+    importWordPress: adminProcedure
+      .input(z.object({
+        categories: z.array(z.object({ name: z.string(), slug: z.string(), description: z.string().optional() })),
+        posts: z.array(z.object({
+          wpId: z.number().optional().nullable(),
+          title: z.string(),
+          slug: z.string(),
+          content: z.string(),
+          excerpt: z.string().optional(),
+          featuredImage: z.string().optional().nullable(),
+          author: z.string().optional(),
+          publishedAt: z.string().optional().nullable(),
+          categories: z.array(z.string()),
+        })),
+      }))
+      .mutation(async ({ input }) => {
+        // Insert categories
+        await bulkInsertCategories(input.categories);
+
+        // Get category map
+        const allCats = await getAllCategories();
+        const catSlugToId = new Map(allCats.map(c => [c.slug, c.id]));
+
+        // Prepare posts
+        const postsToInsert = input.posts.map(p => ({
+          wpId: p.wpId ?? undefined,
+          title: p.title,
+          slug: p.slug,
+          content: p.content,
+          excerpt: p.excerpt || '',
+          featuredImage: p.featuredImage || null,
+          author: p.author || 'Cenas de Combate',
+          status: 'published' as const,
+          publishedAt: p.publishedAt ? new Date(p.publishedAt) : new Date(),
+          categoryIds: p.categories.map(s => catSlugToId.get(s)).filter(Boolean) as number[],
+        }));
+
+        const inserted = await bulkInsertPosts(postsToInsert);
+        return { inserted, total: input.posts.length };
       }),
   }),
 });
