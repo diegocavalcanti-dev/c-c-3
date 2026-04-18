@@ -99,6 +99,7 @@ async function startServer() {
 
   registerOAuthRoutes(app);
 
+  // ─── Public API Routes (must be before Vite middleware) ───────────────────────
   app.get("/api/public/post-meta/:slug", async (req, res) => {
     try {
       const slug = String(req.params.slug || "").trim();
@@ -123,6 +124,7 @@ async function startServer() {
         "Cache-Control",
         "public, s-maxage=600, stale-while-revalidate=86400"
       );
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
 
       return res.json({
         title: post.title,
@@ -152,6 +154,7 @@ async function startServer() {
     })
   );
 
+  // ─── Vite/Static Serving (must be last) ───────────────────────────────────
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
   } else {
