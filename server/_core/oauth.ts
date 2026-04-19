@@ -9,6 +9,15 @@ function getQueryParam(req: Request, key: string): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
+function decodeState(state: string): string | null {
+  try {
+    const decoded = Buffer.from(state, "base64").toString("utf-8");
+    return decoded.startsWith("http") ? decoded : null;
+  } catch {
+    return null;
+  }
+}
+
 export function registerOAuthRoutes(app: Express) {
   app.get("/api/oauth/callback", async (req: Request, res: Response) => {
     const code = getQueryParam(req, "code");
@@ -28,32 +37,33 @@ export function registerOAuthRoutes(app: Express) {
         return;
       }
 
+      const displayName =
+        userInfo.name?.trim() ||
+        userInfo.email?.trim() ||
+        userInfo.openId;
+
       await db.upsertUser({
         openId: userInfo.openId,
-        name: userInfo.name || null,
-        email: userInfo.email ?? null,
+        name: displayName || null,
+        email: userInfo.email?.trim() || null,
         loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
         lastSignedIn: new Date(),
       });
 
       const sessionToken = await sdk.createSessionToken(userInfo.openId, {
-        name: userInfo.name || "",
+        name: displayName,
         expiresInMs: ONE_YEAR_MS,
       });
 
       const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
-      // Extract the original origin from state and redirect there
-      let redirectUrl = "/";
-      try {
-        const decodedState = atob(state);
-        if (decodedState && decodedState.startsWith("http")) {
-          redirectUrl = `${decodedState}/admin`;
-        }
-      } catch (e) {
-        // Fallback to home if state decode fails
-      }
+      res.cookie(COOKIE_NAME, sessionToken, {
+        ...cookieOptions,
+        maxAge: ONE_YEAR_MS,
+      });
+
+      const originalOrigin = decodeState(state);
+      const redirectUrl = originalOrigin ? `${originalOrigin}/admin` : "/admin";
 
       res.redirect(302, redirectUrl);
     } catch (error) {
