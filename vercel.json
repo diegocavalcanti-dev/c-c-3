@@ -5,6 +5,10 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/oauth/:path*",
+      "destination": "https://combateapi-7di34rx2.manus.space/api/oauth/:path*"
+    },
+    {
       "source": "/api/public/:path*",
       "destination": "https://combateapi-7di34rx2.manus.space/api/public/:path*"
     },
