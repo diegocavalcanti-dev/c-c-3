@@ -195,9 +195,9 @@ export default function TipTapEditor({
     if (!editor) return;
 
     const current = editor.getHTML();
-    if (value !== current) {
-      editor.commands.setContent(value || "", false);
-      setHtmlValue(value || "");
+    if (value && value !== current) {
+      editor.commands.setContent(value, false);
+      setHtmlValue(value);
     }
   }, [value, editor]);
 
@@ -233,9 +233,14 @@ export default function TipTapEditor({
   };
 
   const applyHtmlToEditor = (nextHtml: string) => {
+    // Update local state first
     setHtmlValue(nextHtml);
-    editor.commands.setContent(nextHtml || "", false);
-    onChange(nextHtml);
+    // Then update the editor and propagate change immediately
+    if (editor) {
+      editor.commands.setContent(nextHtml || "", false);
+      // Force immediate onChange call
+      onChange(nextHtml);
+    }
   };
 
   const setFontFamilyValue = (font: string) => {
@@ -557,7 +562,10 @@ export default function TipTapEditor({
 
           <textarea
             value={htmlValue}
-            onChange={(e) => applyHtmlToEditor(e.target.value)}
+            onChange={(e) => {
+              const newValue = e.target.value;
+              applyHtmlToEditor(newValue);
+            }}
             spellCheck={false}
             className="min-h-[520px] w-full resize-none border-0 bg-background px-4 py-4 font-mono text-sm outline-none"
             placeholder="<p>Seu HTML aqui...</p>"
@@ -584,7 +592,10 @@ export default function TipTapEditor({
 
             <textarea
               value={htmlValue}
-              onChange={(e) => applyHtmlToEditor(e.target.value)}
+              onChange={(e) => {
+                const newValue = e.target.value;
+                applyHtmlToEditor(newValue);
+              }}
               spellCheck={false}
               className="min-h-[468px] w-full resize-none border-0 bg-background px-4 py-4 font-mono text-sm outline-none"
               placeholder="<p>Seu HTML aqui...</p>"

@@ -131,6 +131,7 @@ export default function AdminPostEditor() {
   const [previewMode, setPreviewMode] = useState(false);
   const [lastLocalSaveAt, setLastLocalSaveAt] = useState<Date | null>(null);
   const [hasRestoredLocalDraft, setHasRestoredLocalDraft] = useState(false);
+  const [publishedAt, setPublishedAt] = useState<string>("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const autosaveTimeoutRef = useRef<number | null>(null);
@@ -421,6 +422,7 @@ export default function AdminPostEditor() {
       status: finalStatus,
       author: author.trim(),
       categoryIds: selectedCategoryIds,
+      publishedAt: publishedAt ? new Date(publishedAt).toISOString() : undefined,
     };
 
     if (isEditing && postId) {
@@ -819,6 +821,21 @@ export default function AdminPostEditor() {
                     onChange={(e) => setAuthor(e.target.value)}
                     className="rounded-2xl border-border/70 bg-background text-sm"
                   />
+                </div>
+
+                <div>
+                  <Label className="mb-2 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Data de Publicação
+                  </Label>
+                  <Input
+                    type="date"
+                    value={publishedAt}
+                    onChange={(e) => setPublishedAt(e.target.value)}
+                    className="rounded-2xl border-border/70 bg-background text-sm"
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {publishedAt ? `Publicado em: ${new Date(publishedAt).toLocaleDateString('pt-BR')}` : 'Nenhuma data definida'}
+                  </p>
                 </div>
 
                 <div className="rounded-2xl border border-border/70 bg-muted/20 p-4">

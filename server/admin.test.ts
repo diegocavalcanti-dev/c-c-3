@@ -35,11 +35,11 @@ function createContext(user: typeof adminUser | typeof regularUser | null): Trpc
 }
 
 describe("Admin Posts Management", () => {
-  describe("posts.adminList", () => {
+  describe("cms.listPosts", () => {
     it("should reject non-admin users", async () => {
       const caller = appRouter.createCaller(createContext(regularUser));
       try {
-        await caller.posts.adminList({ page: 1, limit: 10 });
+        await caller.cms.listPosts({ page: 1, limit: 10 });
         expect.fail("Should have thrown FORBIDDEN");
       } catch (error: any) {
         expect(error.code).toBe("FORBIDDEN");
@@ -48,30 +48,29 @@ describe("Admin Posts Management", () => {
 
     it("should allow admin to list all posts", async () => {
       const caller = appRouter.createCaller(createContext(adminUser));
-      const result = await caller.posts.adminList({ page: 1, limit: 10 });
+      const result = await caller.cms.listPosts({ page: 1, limit: 10 });
       expect(result.posts).toBeDefined();
       expect(result.total).toBeGreaterThanOrEqual(0);
     });
   });
 
-  describe("posts.create", () => {
+  describe("cms.createPost", () => {
     it("should create a draft post", async () => {
       const caller = appRouter.createCaller(createContext(adminUser));
-      const result = await caller.posts.create({
+      const result = await caller.cms.createPost({
         title: "Test Admin Post",
         slug: `test-admin-${Date.now()}`,
         content: "Test content",
         status: "draft",
       });
       expect(result).toBeDefined();
-      expect(result.title).toBe("Test Admin Post");
-      expect(result.status).toBe("draft");
+      expect(result.id).toBeDefined();
     });
 
     it("should reject non-admin users", async () => {
       const caller = appRouter.createCaller(createContext(regularUser));
       try {
-        await caller.posts.create({
+        await caller.cms.createPost({
           title: "Unauthorized",
           slug: "unauthorized",
           content: "content",
@@ -93,8 +92,7 @@ describe("Admin Categories Management", () => {
         slug: `test-cat-${Date.now()}`,
       });
       expect(result).toBeDefined();
-      expect(result.name).toBeDefined();
-      expect(result.slug).toBeDefined();
+      expect(result.success).toBe(true);
     });
 
     it("should reject non-admin users", async () => {

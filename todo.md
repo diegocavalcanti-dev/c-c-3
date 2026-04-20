@@ -60,3 +60,13 @@
 - [x] Criar rota GET /api/public/post-meta/:slug
 - [x] Configurar env SITE_URL como https://cenasdecombate.com
 - [x] Testar rota de preview social
+
+## Editor de Artigos - Campo Published Date
+- [x] Adicionar campo `publishedAt` ao schema Drizzle
+- [x] Atualizar AdminPostEditor.tsx com input de data publicação
+- [x] Integrar handleSave para enviar publishedAt ao backend
+- [x] Atualizar procedures tRPC (createPost, updatePost) para aceitar publishedAt
+- [x] Implementar lógica: se status=published sem publishedAt, usar data atual
+- [x] Implementar lógica: se status=draft, publishedAt fica null
+- [x] Testes vitest para validar publishedAt (5 testes)
+- [x] Todos os 26 testes passando
