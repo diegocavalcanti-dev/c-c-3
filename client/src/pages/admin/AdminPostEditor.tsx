@@ -206,6 +206,17 @@ export default function AdminPostEditor() {
       const nextStatus = (existingPost.status as PostStatus) || "draft";
       const nextAuthor = existingPost.author || "Cenas de Combate";
       const nextCategoryIds = existingPost.categories?.map((c) => c.id) || [];
+      
+      // Format publishedAt for input[type="date"]
+      let nextPublishedAt = "";
+      if (existingPost.publishedAt) {
+        const date = new Date(existingPost.publishedAt);
+        // Convert to local date string in YYYY-MM-DD format
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        nextPublishedAt = `${year}-${month}-${day}`;
+      }
 
       setTitle(nextTitle);
       setSlug(nextSlug);
@@ -215,6 +226,7 @@ export default function AdminPostEditor() {
       setStatus(nextStatus);
       setAuthor(nextAuthor);
       setSelectedCategoryIds(nextCategoryIds);
+      setPublishedAt(nextPublishedAt);
       setSlugManuallyEdited(true);
 
       initialSnapshotRef.current = JSON.stringify({
@@ -225,6 +237,7 @@ export default function AdminPostEditor() {
         featuredImage: nextFeaturedImage,
         status: nextStatus,
         author: nextAuthor,
+        publishedAt: nextPublishedAt,
         selectedCategoryIds: [...nextCategoryIds].sort((a, b) => a - b),
       });
     }
@@ -414,6 +427,14 @@ export default function AdminPostEditor() {
 
     if (!validateBeforeSave(finalStatus)) return;
 
+    // Convert local date string (YYYY-MM-DD) to ISO string at midnight local time
+    let publishedAtIso: string | undefined;
+    if (publishedAt) {
+      const [year, month, day] = publishedAt.split('-').map(Number);
+      const date = new Date(year, month - 1, day, 0, 0, 0, 0);
+      publishedAtIso = date.toISOString();
+    }
+
     const data = {
       title: title.trim(),
       slug: slugify(slug.trim()),
@@ -422,7 +443,7 @@ export default function AdminPostEditor() {
       status: finalStatus,
       author: author.trim(),
       categoryIds: selectedCategoryIds,
-      publishedAt: publishedAt ? new Date(publishedAt).toISOString() : undefined,
+      publishedAt: publishedAtIso,
     };
 
     if (isEditing && postId) {

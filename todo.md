@@ -70,3 +70,10 @@
 - [x] Implementar lógica: se status=draft, publishedAt fica null
 - [x] Testes vitest para validar publishedAt (5 testes)
 - [x] Todos os 26 testes passando
+
+
+## Bugs a Corrigir - Publicação de Artigos
+- [x] Data desaparecendo após reload do editor (serialização/timezone)
+- [x] Data com diferença de 1 dia (UTC vs local timezone)
+- [x] Editor HTML não sincronizando visual com conteúdo salvo
+- [x] Falta de botões de tamanho de fonte no editor TipTap

@@ -194,10 +194,12 @@ export default function TipTapEditor({
   useEffect(() => {
     if (!editor) return;
 
+    // Only update if the value has actually changed
     const current = editor.getHTML();
-    if (value && value !== current) {
-      editor.commands.setContent(value, false);
-      setHtmlValue(value);
+    if (value !== current) {
+      // Use setContent with parseOptions to properly parse the HTML
+      editor.commands.setContent(value || "", false);
+      setHtmlValue(value || "");
     }
   }, [value, editor]);
 
@@ -351,17 +353,26 @@ export default function TipTapEditor({
             ))}
           </select>
 
-          <select
-            className="h-9 rounded-xl border border-border bg-background px-3 text-sm"
-            defaultValue="default"
-            onChange={(e) => setFontSizeValue(e.target.value)}
-          >
-            {FONT_SIZE_OPTIONS.map((size) => (
-              <option key={size.value} value={size.value}>
-                {size.label}
-              </option>
+          <div className="inline-flex items-center gap-1 rounded-xl border border-border bg-background p-1">
+            <span className="px-2 text-xs text-muted-foreground">Tamanho:</span>
+            {FONT_SIZE_OPTIONS.slice(1).map((size) => (
+              <ToolbarButton
+                key={size.value}
+                active={editor.isActive("textStyle", { fontSize: size.value })}
+                onClick={() => setFontSizeValue(size.value)}
+                title={`Tamanho ${size.label}px`}
+              >
+                <span className="text-xs font-medium">{size.label}</span>
+              </ToolbarButton>
             ))}
-          </select>
+            <ToolbarButton
+              active={!editor.isActive("textStyle")}
+              onClick={() => setFontSizeValue("default")}
+              title="Tamanho padrão"
+            >
+              <span className="text-xs font-medium">Reset</span>
+            </ToolbarButton>
+          </div>
 
           <ToolbarDivider />
 
