@@ -509,71 +509,6 @@ export default function Home() {
 
         <AdBanner />
 
-        {/* Editorias */}
-        <section className="container px-4 py-10 md:py-14">
-          <div className="flex items-end justify-between gap-4 mb-8">
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.25em] text-primary font-black mb-2">
-                Navegação editorial
-              </p>
-              <h2 className="text-2xl md:text-4xl font-black tracking-tight">
-                Explore por editoria
-              </h2>
-              {/* <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-                Uma home mais forte começa por organizar bem o conteúdo. Aqui o leitor
-                encontra rápido os assuntos centrais do portal.
-              </p> */}
-            </div>
-          </div>
-
-          {loadingCategories && editorialCards.length === 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-44 rounded-2xl" />
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-              {editorialCards.map((card) => {
-                const Icon = card.icon;
-
-                return (
-                  <Link key={card.id} href={`/categoria/${card.slug}`}>
-                    <article className="group h-full rounded-2xl border border-border bg-card p-5 hover:border-primary/50 hover:-translate-y-1 transition-all duration-300 shadow-sm hover:shadow-xl cursor-pointer relative overflow-hidden">
-                      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-primary/60 to-transparent" />
-
-                      <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
-                        <Icon className="w-5 h-5" />
-                      </div>
-
-                      <div className="flex items-start justify-between gap-3">
-                        <h3 className="text-lg font-black leading-tight group-hover:text-primary transition-colors">
-                          {card.name}
-                        </h3>
-
-                        {typeof card.count === "number" && (
-                          <span className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground shrink-0">
-                            {card.count} posts
-                          </span>
-                        )}
-                      </div>
-
-                      <p className="text-sm text-muted-foreground leading-relaxed mt-2">
-                        {card.description}
-                      </p>
-
-                      <div className="mt-5 inline-flex items-center text-sm font-bold text-primary">
-                        Acessar editoria
-                        <ChevronRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
-                      </div>
-                    </article>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-        </section>
-
         {/* Geopolítica + Aviação */}
         <section className="container px-4 py-8 md:py-12">
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-12">
@@ -933,7 +868,7 @@ export default function Home() {
                 </div>
               </SidebarWidget>
 
-              <SidebarWidget title="Categorias">
+              {/* <SidebarWidget title="Categorias">
                 {loadingCategories && categoriesList.length === 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {Array.from({ length: 8 }).map((_, i) => (
@@ -951,7 +886,71 @@ export default function Home() {
                     ))}
                   </div>
                 )}
-              </SidebarWidget>
+              </SidebarWidget> */}
+              {/* Editorias */}
+              <section className="container px-4 py-10 md:py-14">
+                <div className="flex items-end justify-between gap-4 mb-8">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.25em] text-primary font-black mb-2">
+                      Navegação editorial
+                    </p>
+                    <h2 className="text-2xl md:text-4xl font-black tracking-tight">
+                      Explore por editoria
+                    </h2>
+                    {/* <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
+                Uma home mais forte começa por organizar bem o conteúdo. Aqui o leitor
+                encontra rápido os assuntos centrais do portal.
+              </p> */}
+                  </div>
+                </div>
+
+                {loadingCategories && editorialCards.length === 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <Skeleton key={i} className="h-44 rounded-2xl" />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                    {editorialCards.map((card) => {
+                      const Icon = card.icon;
+
+                      return (
+                        <Link key={card.id} href={`/categoria/${card.slug}`}>
+                          <article className="group h-full rounded-2xl border border-border bg-card p-5 hover:border-primary/50 hover:-translate-y-1 transition-all duration-300 shadow-sm hover:shadow-xl cursor-pointer relative overflow-hidden">
+                            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-primary/60 to-transparent" />
+
+                            <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
+                              <Icon className="w-5 h-5" />
+                            </div>
+
+                            <div className="flex items-start justify-between gap-3">
+                              <h3 className="text-lg font-black leading-tight group-hover:text-primary transition-colors">
+                                {card.name}
+                              </h3>
+
+                              {typeof card.count === "number" && (
+                                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground shrink-0">
+                                  {card.count} posts
+                                </span>
+                              )}
+                            </div>
+
+                            <p className="text-sm text-muted-foreground leading-relaxed mt-2">
+                              {card.description}
+                            </p>
+
+                            <div className="mt-5 inline-flex items-center text-sm font-bold text-primary">
+                              Acessar editoria
+                              <ChevronRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
+                            </div>
+                          </article>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
 
               <SidebarWidget title="Sugira uma pauta">
                 <div className="text-center">
