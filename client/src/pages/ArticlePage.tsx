@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useParams, Link } from "wouter";
 import { DiscussionEmbed } from "disqus-react";
 import { trpc } from "@/lib/trpc";
@@ -95,33 +95,6 @@ export default function ArticlePage() {
     }
   };
 
-  const publishedDate = post?.publishedAt
-    ? new Date(post.publishedAt).toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    })
-    : "";
-
-  const disqusIdentifier = String(post?.id ?? post?.slug ?? slug ?? "");
-  const canonicalSlug = post?.slug ?? slug ?? "";
-  const canonicalUrl = `${SITE_URL}/${canonicalSlug}`;
-
-  const disqusConfig = useMemo(
-    () => ({
-      url: canonicalUrl,
-      identifier: disqusIdentifier,
-      title: post?.title || "Artigo",
-      language: "pt_BR",
-    }),
-    [canonicalUrl, disqusIdentifier, post?.title]
-  );
-
-  const canRenderDisqus =
-    Boolean(DISQUS_SHORTNAME) &&
-    Boolean(disqusIdentifier) &&
-    Boolean(post?.title);
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
@@ -162,6 +135,30 @@ export default function ArticlePage() {
       </div>
     );
   }
+
+  const publishedDate = post.publishedAt
+    ? new Date(post.publishedAt).toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    })
+    : "";
+
+  const canonicalSlug = post?.slug ?? slug ?? "";
+  const disqusIdentifier = String(post?.id ?? canonicalSlug);
+  const canonicalUrl = `${SITE_URL}/${canonicalSlug}`;
+
+  const disqusConfig = {
+    url: canonicalUrl,
+    identifier: disqusIdentifier,
+    title: post?.title || "Artigo",
+    language: "pt_BR",
+  };
+
+  const canRenderDisqus =
+    Boolean(DISQUS_SHORTNAME) &&
+    Boolean(disqusIdentifier) &&
+    Boolean(post?.title);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
