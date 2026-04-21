@@ -887,7 +887,47 @@ export default function Home() {
                   </div>
                 )}
               </SidebarWidget> */}
-              {/* Editorias */}
+              
+
+              <SidebarWidget title="Sugira uma pauta">
+                <div className="text-center">
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary mx-auto mb-4 flex items-center justify-center">
+                    <ExternalLink className="w-5 h-5" />
+                  </div>
+
+                  <h4 className="font-black text-base mb-2">
+                    Tem uma pauta interessante?
+                  </h4>
+
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                    Sugestões de conflitos, aviação, história militar e tecnologia
+                    podem virar destaque na home.
+                  </p>
+
+                  {/* Link para o e-mail */}
+                  <a href="mailto:cenasdecombate@gmail.com">
+                    <Button
+                      variant="outline"
+                      className="w-full rounded-xl font-black uppercase tracking-[0.15em] text-xs hover:bg-primary hover:text-white transition-all"
+                    >
+                      Entrar em contato
+                    </Button>
+                  </a>
+                </div>
+              </SidebarWidget>
+
+              {/* <div className="sticky top-24">
+                <div className="w-full rounded-3xl border border-dashed border-border bg-muted/50 p-8 flex flex-col items-center justify-center text-center min-h-[320px]">
+                  <Shield className="w-8 h-8 text-muted-foreground/60 mb-4" />
+                  <p className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                    Espaço para publicidade
+                  </p>
+                </div>
+              </div> */}
+            </aside>
+          </div>
+        </section>
+        {/* Editorias */}
               <section className="container px-4 py-10 md:py-14">
                 <div className="flex items-end justify-between gap-4 mb-8">
                   <div>
@@ -951,45 +991,6 @@ export default function Home() {
                   </div>
                 )}
               </section>
-
-              <SidebarWidget title="Sugira uma pauta">
-                <div className="text-center">
-                  <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary mx-auto mb-4 flex items-center justify-center">
-                    <ExternalLink className="w-5 h-5" />
-                  </div>
-
-                  <h4 className="font-black text-base mb-2">
-                    Tem uma pauta interessante?
-                  </h4>
-
-                  <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                    Sugestões de conflitos, aviação, história militar e tecnologia
-                    podem virar destaque na home.
-                  </p>
-
-                  {/* Link para o e-mail */}
-                  <a href="mailto:cenasdecombate@gmail.com">
-                    <Button
-                      variant="outline"
-                      className="w-full rounded-xl font-black uppercase tracking-[0.15em] text-xs hover:bg-primary hover:text-white transition-all"
-                    >
-                      Entrar em contato
-                    </Button>
-                  </a>
-                </div>
-              </SidebarWidget>
-
-              {/* <div className="sticky top-24">
-                <div className="w-full rounded-3xl border border-dashed border-border bg-muted/50 p-8 flex flex-col items-center justify-center text-center min-h-[320px]">
-                  <Shield className="w-8 h-8 text-muted-foreground/60 mb-4" />
-                  <p className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                    Espaço para publicidade
-                  </p>
-                </div>
-              </div> */}
-            </aside>
-          </div>
-        </section>
       </main>
 
       <SiteFooter />
