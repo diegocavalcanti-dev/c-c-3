@@ -115,6 +115,75 @@
   --chart-5: oklch(0.40 0.08 75);
 }
 
+/* =========================
+   DISQUS FIX (OKLCH -> HEX)
+   ========================= */
+
+/* força cores simples enquanto o Disqus estiver na página */
+html.disqus-fix,
+body.disqus-fix {
+  background-color: #0b0f14 !important;
+  color: #f4f4f5 !important;
+}
+
+/* se houver modo claro real */
+.light.disqus-fix,
+.light body.disqus-fix,
+html.light.disqus-fix,
+body.light.disqus-fix {
+  background-color: #ffffff !important;
+  color: #18181b !important;
+}
+
+/* wrapper do bloco de comentários */
+.disqus-shell {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+/* host onde o embed entra */
+.disqus-host,
+#comments-host,
+#disqus_thread {
+  background-color: #0b0f14 !important;
+  color: #f4f4f5 !important;
+  min-height: 180px;
+}
+
+/* links dentro do embed */
+.disqus-shell a,
+.disqus-host a,
+#comments-host a,
+#disqus_thread a {
+  color: #f59e0b !important;
+}
+
+/* textos comuns do embed */
+.disqus-shell,
+.disqus-host,
+#comments-host,
+#disqus_thread,
+#disqus_thread * {
+  color-scheme: dark;
+}
+
+/* fallback claro */
+.light .disqus-host,
+.light #comments-host,
+.light #disqus_thread,
+html.light #disqus_thread,
+body.light #disqus_thread {
+  background-color: transparent !important;
+  color: #18181b !important;
+}
+
+.light .disqus-shell a,
+.light .disqus-host a,
+.light #comments-host a,
+.light #disqus_thread a {
+  color: #d97706 !important;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
