@@ -359,7 +359,7 @@ export default function ArticlePage() {
           </div>
         </div>
       </main>
-
+      <AdBanner />
       <SiteFooter />
     </div>
   );
