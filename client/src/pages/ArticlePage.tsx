@@ -40,14 +40,17 @@ const safeImage = (src?: string) =>
 export default function ArticlePage() {
   const { slug } = useParams<{ slug: string }>();
   const [copied, setCopied] = useState(false);
+  const [disqusReady, setDisqusReady] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.add("disqus-fix");
     document.body.classList.add("disqus-fix");
+    setDisqusReady(true);
 
     return () => {
       document.documentElement.classList.remove("disqus-fix");
       document.body.classList.remove("disqus-fix");
+      setDisqusReady(false);
     };
   }, []);
 
@@ -169,12 +172,6 @@ export default function ArticlePage() {
     language: "pt_BR",
   };
 
-  console.log("DISQUS_SHORTNAME", DISQUS_SHORTNAME);
-  console.log("disqusConfig", disqusConfig);
-  console.log("post.id", post?.id);
-  console.log("post.slug", post?.slug);
-  console.log("post.title", post?.title);
-
   const canRenderDisqus =
     Boolean(DISQUS_SHORTNAME) &&
     Boolean(disqusIdentifier) &&
@@ -287,12 +284,12 @@ export default function ArticlePage() {
               )}
 
               <div
-                className="article-content"
+                className="article-content border-b border-border"
                 dangerouslySetInnerHTML={{ __html: post.content || "" }}
               />
 
-              {canRenderDisqus && (
-                <div className="disqus-shell mt-12 pt-8 border-t border-border">
+              {canRenderDisqus && disqusReady && (
+                <div className=" mt-12 mb-0">
                   <div className="mb-6">
                     <p className="text-[11px] uppercase tracking-[0.2em] text-primary font-black mb-2">
                       Debate
@@ -302,7 +299,7 @@ export default function ArticlePage() {
                     </h3>
                   </div>
 
-                  <div id="comments-host" className="disqus-host">
+                  <div id="comments-host" className="disqus-host disqus-shell  rounded-2xl border-t border-b border-border px-4 pt-6 pb--10 md:px-8 md:pt-8 md:pb-8">
                     <DiscussionEmbed
                       key={disqusIdentifier}
                       shortname={DISQUS_SHORTNAME}
