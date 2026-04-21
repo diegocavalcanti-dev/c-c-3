@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useParams, Link } from "wouter";
+import { DiscussionEmbed } from "disqus-react";
 import { trpc } from "@/lib/trpc";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -10,7 +11,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   Calendar,
   User,
-  Eye,
   ChevronRight,
   Home,
   Share2,
@@ -20,6 +20,8 @@ import {
 import AdBanner from "@/components/AdBanner";
 
 const DEFAULT_IMAGE = "/og-default.jpg";
+const DISQUS_SHORTNAME = "cenasdecombate";
+const SITE_URL = "https://cenasdecombate.com";
 
 const unwrapCollection = (data: any) => {
   if (Array.isArray(data?.json)) return data.json;
@@ -63,7 +65,9 @@ export default function ArticlePage() {
 
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      const urlToCopy =
+        typeof window !== "undefined" ? window.location.href : `${SITE_URL}/${slug}`;
+      await navigator.clipboard.writeText(urlToCopy);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
     } catch (error) {
@@ -73,11 +77,14 @@ export default function ArticlePage() {
 
   const handleShare = async () => {
     try {
+      const shareUrl =
+        typeof window !== "undefined" ? window.location.href : `${SITE_URL}/${slug}`;
+
       if (navigator.share) {
         await navigator.share({
           title: post?.title || "Artigo",
           text: post?.excerpt || post?.title || "",
-          url: window.location.href,
+          url: shareUrl,
         });
         return;
       }
@@ -87,6 +94,33 @@ export default function ArticlePage() {
       console.error("Erro ao compartilhar:", error);
     }
   };
+
+  const publishedDate = post?.publishedAt
+    ? new Date(post.publishedAt).toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    })
+    : "";
+
+  const disqusIdentifier = String(post?.id ?? post?.slug ?? slug ?? "");
+  const canonicalSlug = post?.slug ?? slug ?? "";
+  const canonicalUrl = `${SITE_URL}/${canonicalSlug}`;
+
+  const disqusConfig = useMemo(
+    () => ({
+      url: canonicalUrl,
+      identifier: disqusIdentifier,
+      title: post?.title || "Artigo",
+      language: "pt_BR",
+    }),
+    [canonicalUrl, disqusIdentifier, post?.title]
+  );
+
+  const canRenderDisqus =
+    Boolean(DISQUS_SHORTNAME) &&
+    Boolean(disqusIdentifier) &&
+    Boolean(post?.title);
 
   if (isLoading) {
     return (
@@ -128,14 +162,6 @@ export default function ArticlePage() {
       </div>
     );
   }
-
-  const publishedDate = post.publishedAt
-    ? new Date(post.publishedAt).toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    })
-    : "";
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -203,12 +229,6 @@ export default function ArticlePage() {
                   </span>
                 )}
 
-                {/* {post.viewCount > 0 && (
-                  <span className="flex items-center gap-1.5">
-                    <Eye className="w-4 h-4" />
-                    {post.viewCount.toLocaleString("pt-BR")} visualizações
-                  </span>
-                )} */}
                 <div className="flex flex-wrap items-center gap-3">
                   <Button
                     type="button"
@@ -236,8 +256,6 @@ export default function ArticlePage() {
                 </div>
               </div>
 
-
-
               {post.featuredImage && (
                 <div className="mb-6 rounded-xl overflow-hidden border border-border">
                   <img
@@ -255,6 +273,25 @@ export default function ArticlePage() {
                 className="article-content"
                 dangerouslySetInnerHTML={{ __html: post.content || "" }}
               />
+
+              {canRenderDisqus && (
+                <div className="mt-12 pt-8 border-t border-border">
+                  <div className="mb-6">
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-primary font-black mb-2">
+                      Debate
+                    </p>
+                    <h3 className="text-2xl font-black tracking-tight">
+                      Comentários
+                    </h3>
+                  </div>
+
+                  <DiscussionEmbed
+                    key={disqusIdentifier}
+                    shortname={DISQUS_SHORTNAME}
+                    config={disqusConfig}
+                  />
+                </div>
+              )}
 
               <div className="mt-10 rounded-3xl border border-border bg-card p-6 md:p-8 shadow-sm">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
@@ -359,6 +396,7 @@ export default function ArticlePage() {
           </div>
         </div>
       </main>
+
       <AdBanner />
       <SiteFooter />
     </div>
