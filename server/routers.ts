@@ -9,7 +9,7 @@ import {
   getAllCategories, getCategoryBySlug, createCategory, updateCategory, deleteCategory,
   getPublishedPosts, getPostBySlug, getPostById, getPostCategories, incrementViewCount,
   createPost, updatePost, deletePost, getAllPostsAdmin, getPostStats,
-  bulkInsertCategories, bulkInsertPosts, createMedia,
+  bulkInsertCategories, bulkInsertPosts, createMedia, getAllMedia, deleteMedia as deleteMediaDb,
 } from "./db";
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
@@ -239,14 +239,20 @@ export const appRouter = router({
       }),
 
     listMedia: adminProcedure.query(async () => {
-      // TODO: Implementar query para listar mídia
-      return [];
+      const mediaList = await getAllMedia();
+      return mediaList.map(m => ({
+        id: m.id,
+        url: m.s3Url || "",
+        filename: m.filename || "",
+        size: m.fileSize || 0,
+        createdAt: m.createdAt,
+      }));
     }),
 
     deleteMedia: adminProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
-        // TODO: Implementar delete de mídia
+        await deleteMediaDb(input.id);
         return { success: true };
       }),
 

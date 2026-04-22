@@ -77,3 +77,12 @@
 - [x] Data com diferença de 1 dia (UTC vs local timezone)
 - [x] Editor HTML não sincronizando visual com conteúdo salvo
 - [x] Falta de botões de tamanho de fonte no editor TipTap
+
+
+## Gerenciador de Mídia (Media Manager)
+- [x] Implementar procedimento `cms.listMedia` para listar imagens do banco
+- [x] Implementar procedimento `cms.deleteMedia` para deletar imagens
+- [x] Adicionar helpers `getAllMedia()` e `deleteMedia()` em server/db.ts
+- [x] Testar funcionalidade de mídia com 6 testes vitest
+- [x] Todos os 43 testes passando (37 anteriores + 6 novos de mídia)
+- [x] MediaGallery renderiza imagens corretamente do backend

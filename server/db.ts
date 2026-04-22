@@ -263,6 +263,18 @@ export async function getMediaByWpUrl(wpUrl: string) {
   return result[0];
 }
 
+export async function getAllMedia() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(media).orderBy(desc(media.createdAt));
+}
+
+export async function deleteMedia(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  await db.delete(media).where(eq(media.id, id));
+}
+
 // ─── Bulk Import ─────────────────────────────────────────────────────────────
 
 export async function bulkInsertCategories(cats: InsertCategory[]) {
