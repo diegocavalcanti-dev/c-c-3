@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { mergeAttributes } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
@@ -36,19 +36,19 @@ import {
   Eraser,
   Eye,
   Code2,
-  Columns2,
   Palette,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import "./TipTapEditor.css";
 
+type EditorMode = "visual" | "html";
+
 interface TipTapEditorProps {
   value: string;
   onChange: (content: string) => void;
   placeholder?: string;
+  defaultMode?: EditorMode;
 }
-
-type EditorMode = "visual" | "html" | "split";
 
 const FONT_OPTIONS = [
   { label: "Padrão", value: "inherit" },
@@ -60,7 +60,6 @@ const FONT_OPTIONS = [
 ];
 
 const FONT_SIZE_OPTIONS = [
-  { label: "Tamanho", value: "default" },
   { label: "12", value: "12px" },
   { label: "14", value: "14px" },
   { label: "16", value: "16px" },
@@ -134,9 +133,16 @@ export default function TipTapEditor({
   value,
   onChange,
   placeholder = "Escreva seu artigo aqui...",
+  defaultMode = "visual",
 }: TipTapEditorProps) {
-  const [mode, setMode] = useState<EditorMode>("visual");
-  const [htmlValue, setHtmlValue] = useState(value || "");
+  const [mode, setMode] = useState<EditorMode>(defaultMode);
+  const [htmlDraft, setHtmlDraft] = useState(value || "");
+  const htmlDraftRef = useRef(htmlDraft);
+  const isApplyingHtmlRef = useRef(false);
+
+  useEffect(() => {
+    htmlDraftRef.current = htmlDraft;
+  }, [htmlDraft]);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -185,34 +191,68 @@ export default function TipTapEditor({
       },
     },
     onUpdate: ({ editor }) => {
+      if (isApplyingHtmlRef.current) return;
+      if (mode !== "visual") return;
+
       const html = editor.getHTML();
-      setHtmlValue(html);
       onChange(html);
     },
   });
 
   useEffect(() => {
     if (!editor) return;
+    if (mode !== "visual") return;
 
-    // Only update if the value has actually changed
     const current = editor.getHTML();
     if (value !== current) {
-      // Use setContent with parseOptions to properly parse the HTML
       editor.commands.setContent(value || "", false);
-      setHtmlValue(value || "");
     }
-  }, [value, editor]);
+  }, [value, editor, mode]);
+
+  useEffect(() => {
+    if (mode === "html") {
+      setHtmlDraft(value || "");
+    }
+  }, [mode, value]);
 
   const stats = useMemo(() => {
-    const text = stripHtml(htmlValue);
+    const text = stripHtml(value);
     const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
     const chars = text.length;
     return { words, chars };
-  }, [htmlValue]);
+  }, [value]);
 
   if (!editor) {
     return null;
   }
+
+  const openHtmlMode = () => {
+    setHtmlDraft(editor.getHTML() || value || "");
+    setMode("html");
+  };
+
+  const applyHtml = () => {
+    const nextHtml = htmlDraftRef.current || "";
+
+    isApplyingHtmlRef.current = true;
+    editor.commands.setContent(nextHtml, false);
+    onChange(nextHtml);
+    queueMicrotask(() => {
+      isApplyingHtmlRef.current = false;
+    });
+  };
+
+  const backToVisual = () => {
+    applyHtml();
+    setMode("visual");
+    requestAnimationFrame(() => {
+      editor.commands.focus("end");
+    });
+  };
+
+  const cancelHtmlChanges = () => {
+    setHtmlDraft(value || "");
+  };
 
   const addImage = () => {
     const url = window.prompt("URL da imagem:");
@@ -232,17 +272,6 @@ export default function TipTapEditor({
     }
 
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
-  };
-
-  const applyHtmlToEditor = (nextHtml: string) => {
-    // Update local state first
-    setHtmlValue(nextHtml);
-    // Then update the editor and propagate change immediately
-    if (editor) {
-      editor.commands.setContent(nextHtml || "", false);
-      // Force immediate onChange call
-      onChange(nextHtml);
-    }
   };
 
   const setFontFamilyValue = (font: string) => {
@@ -292,21 +321,10 @@ export default function TipTapEditor({
               size="sm"
               variant={mode === "html" ? "default" : "ghost"}
               className="rounded-lg"
-              onClick={() => setMode("html")}
+              onClick={openHtmlMode}
             >
               <Code2 className="mr-1.5 h-4 w-4" />
               HTML
-            </Button>
-
-            <Button
-              type="button"
-              size="sm"
-              variant={mode === "split" ? "default" : "ghost"}
-              className="rounded-lg"
-              onClick={() => setMode("split")}
-            >
-              <Columns2 className="mr-1.5 h-4 w-4" />
-              Split
             </Button>
           </div>
 
@@ -317,245 +335,275 @@ export default function TipTapEditor({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1">
-          <select
-            className="h-9 rounded-xl border border-border bg-background px-3 text-sm"
-            value={currentBlockType}
-            onChange={(e) => {
-              const nextValue = e.target.value;
+        {mode === "visual" && (
+          <div className="flex flex-wrap items-center gap-1">
+            <select
+              className="h-9 rounded-xl border border-border bg-background px-3 text-sm"
+              value={currentBlockType}
+              onChange={(e) => {
+                const nextValue = e.target.value;
 
-              if (nextValue === "paragraph") {
-                editor.chain().focus().setParagraph().run();
-              } else if (nextValue === "h1") {
-                editor.chain().focus().toggleHeading({ level: 1 }).run();
-              } else if (nextValue === "h2") {
-                editor.chain().focus().toggleHeading({ level: 2 }).run();
-              } else if (nextValue === "h3") {
-                editor.chain().focus().toggleHeading({ level: 3 }).run();
-              }
-            }}
-          >
-            <option value="paragraph">Parágrafo</option>
-            <option value="h1">Título 1</option>
-            <option value="h2">Título 2</option>
-            <option value="h3">Título 3</option>
-          </select>
-
-          <select
-            className="h-9 rounded-xl border border-border bg-background px-3 text-sm"
-            defaultValue="inherit"
-            onChange={(e) => setFontFamilyValue(e.target.value)}
-          >
-            {FONT_OPTIONS.map((font) => (
-              <option key={font.value} value={font.value}>
-                {font.label}
-              </option>
-            ))}
-          </select>
-
-          <div className="inline-flex items-center gap-1 rounded-xl border border-border bg-background p-1">
-            <span className="px-2 text-xs text-muted-foreground">Tamanho:</span>
-            {FONT_SIZE_OPTIONS.slice(1).map((size) => (
-              <ToolbarButton
-                key={size.value}
-                active={editor.isActive("textStyle", { fontSize: size.value })}
-                onClick={() => setFontSizeValue(size.value)}
-                title={`Tamanho ${size.label}px`}
-              >
-                <span className="text-xs font-medium">{size.label}</span>
-              </ToolbarButton>
-            ))}
-            <ToolbarButton
-              active={!editor.isActive("textStyle")}
-              onClick={() => setFontSizeValue("default")}
-              title="Tamanho padrão"
+                if (nextValue === "paragraph") {
+                  editor.chain().focus().setParagraph().run();
+                } else if (nextValue === "h1") {
+                  editor.chain().focus().toggleHeading({ level: 1 }).run();
+                } else if (nextValue === "h2") {
+                  editor.chain().focus().toggleHeading({ level: 2 }).run();
+                } else if (nextValue === "h3") {
+                  editor.chain().focus().toggleHeading({ level: 3 }).run();
+                }
+              }}
             >
-              <span className="text-xs font-medium">Reset</span>
+              <option value="paragraph">Parágrafo</option>
+              <option value="h1">Título 1</option>
+              <option value="h2">Título 2</option>
+              <option value="h3">Título 3</option>
+            </select>
+
+            <select
+              className="h-9 rounded-xl border border-border bg-background px-3 text-sm"
+              defaultValue="inherit"
+              onChange={(e) => setFontFamilyValue(e.target.value)}
+            >
+              {FONT_OPTIONS.map((font) => (
+                <option key={font.value} value={font.value}>
+                  {font.label}
+                </option>
+              ))}
+            </select>
+
+            <div className="inline-flex items-center gap-1 rounded-xl border border-border bg-background p-1">
+              <span className="px-2 text-xs text-muted-foreground">Tamanho:</span>
+              {FONT_SIZE_OPTIONS.map((size) => (
+                <ToolbarButton
+                  key={size.value}
+                  active={editor.isActive("textStyle", { fontSize: size.value })}
+                  onClick={() => setFontSizeValue(size.value)}
+                  title={`Tamanho ${size.label}px`}
+                >
+                  <span className="text-xs font-medium">{size.label}</span>
+                </ToolbarButton>
+              ))}
+              <ToolbarButton
+                active={!editor.isActive("textStyle")}
+                onClick={() => setFontSizeValue("default")}
+                title="Tamanho padrão"
+              >
+                <span className="text-xs font-medium">Reset</span>
+              </ToolbarButton>
+            </div>
+
+            <ToolbarDivider />
+
+            <ToolbarButton
+              active={editor.isActive("bold")}
+              onClick={() => editor.chain().focus().toggleBold().run()}
+              title="Negrito"
+            >
+              <Bold className="h-4 w-4" />
+            </ToolbarButton>
+
+            <ToolbarButton
+              active={editor.isActive("italic")}
+              onClick={() => editor.chain().focus().toggleItalic().run()}
+              title="Itálico"
+            >
+              <Italic className="h-4 w-4" />
+            </ToolbarButton>
+
+            <ToolbarButton
+              active={editor.isActive("underline")}
+              onClick={() => editor.chain().focus().toggleUnderline().run()}
+              title="Sublinhado"
+            >
+              <UnderlineIcon className="h-4 w-4" />
+            </ToolbarButton>
+
+            <ToolbarButton
+              active={editor.isActive("strike")}
+              onClick={() => editor.chain().focus().toggleStrike().run()}
+              title="Tachado"
+            >
+              <Strikethrough className="h-4 w-4" />
+            </ToolbarButton>
+
+            <ToolbarButton
+              active={editor.isActive("highlight")}
+              onClick={() => editor.chain().focus().toggleHighlight().run()}
+              title="Destacar"
+            >
+              <Highlighter className="h-4 w-4" />
+            </ToolbarButton>
+
+            <ToolbarDivider />
+
+            <ToolbarButton
+              active={editor.isActive({ textAlign: "left" })}
+              onClick={() => editor.chain().focus().setTextAlign("left").run()}
+              title="Alinhar à esquerda"
+            >
+              <AlignLeft className="h-4 w-4" />
+            </ToolbarButton>
+
+            <ToolbarButton
+              active={editor.isActive({ textAlign: "center" })}
+              onClick={() => editor.chain().focus().setTextAlign("center").run()}
+              title="Centralizar"
+            >
+              <AlignCenter className="h-4 w-4" />
+            </ToolbarButton>
+
+            <ToolbarButton
+              active={editor.isActive({ textAlign: "right" })}
+              onClick={() => editor.chain().focus().setTextAlign("right").run()}
+              title="Alinhar à direita"
+            >
+              <AlignRight className="h-4 w-4" />
+            </ToolbarButton>
+
+            <ToolbarButton
+              active={editor.isActive({ textAlign: "justify" })}
+              onClick={() => editor.chain().focus().setTextAlign("justify").run()}
+              title="Justificar"
+            >
+              <AlignJustify className="h-4 w-4" />
+            </ToolbarButton>
+
+            <ToolbarDivider />
+
+            <ToolbarButton
+              active={editor.isActive("bulletList")}
+              onClick={() => editor.chain().focus().toggleBulletList().run()}
+              title="Lista com marcadores"
+            >
+              <List className="h-4 w-4" />
+            </ToolbarButton>
+
+            <ToolbarButton
+              active={editor.isActive("orderedList")}
+              onClick={() => editor.chain().focus().toggleOrderedList().run()}
+              title="Lista numerada"
+            >
+              <ListOrdered className="h-4 w-4" />
+            </ToolbarButton>
+
+            <ToolbarButton
+              active={editor.isActive("taskList")}
+              onClick={() => editor.chain().focus().toggleTaskList().run()}
+              title="Checklist"
+            >
+              <CheckSquare className="h-4 w-4" />
+            </ToolbarButton>
+
+            <ToolbarButton
+              active={editor.isActive("blockquote")}
+              onClick={() => editor.chain().focus().toggleBlockquote().run()}
+              title="Citação"
+            >
+              <Quote className="h-4 w-4" />
+            </ToolbarButton>
+
+            <ToolbarButton
+              active={editor.isActive("codeBlock")}
+              onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+              title="Bloco de código"
+            >
+              <Code className="h-4 w-4" />
+            </ToolbarButton>
+
+            <ToolbarButton
+              onClick={() => editor.chain().focus().setHorizontalRule().run()}
+              title="Linha horizontal"
+            >
+              <Minus className="h-4 w-4" />
+            </ToolbarButton>
+
+            <ToolbarDivider />
+
+            <ToolbarButton
+              active={editor.isActive("link")}
+              onClick={addLink}
+              title="Adicionar link"
+            >
+              <LinkIcon className="h-4 w-4" />
+            </ToolbarButton>
+
+            <ToolbarButton onClick={addImage} title="Adicionar imagem">
+              <ImageIcon className="h-4 w-4" />
+            </ToolbarButton>
+
+            <ToolbarDivider />
+
+            <div className="flex items-center gap-1 rounded-xl border border-border bg-background px-2 py-1">
+              <Palette className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center gap-1">
+                {COLOR_OPTIONS.map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    className="h-5 w-5 rounded-full border border-border"
+                    style={{ backgroundColor: color }}
+                    onClick={() => editor.chain().focus().setColor(color).run()}
+                    title={color}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <ToolbarButton
+              onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}
+              title="Limpar formatação"
+            >
+              <Eraser className="h-4 w-4" />
+            </ToolbarButton>
+
+            <ToolbarDivider />
+
+            <ToolbarButton
+              onClick={() => editor.chain().focus().undo().run()}
+              disabled={!editor.can().undo()}
+              title="Desfazer"
+            >
+              <Undo2 className="h-4 w-4" />
+            </ToolbarButton>
+
+            <ToolbarButton
+              onClick={() => editor.chain().focus().redo().run()}
+              disabled={!editor.can().redo()}
+              title="Refazer"
+            >
+              <Redo2 className="h-4 w-4" />
             </ToolbarButton>
           </div>
+        )}
 
-          <ToolbarDivider />
+        {mode === "html" && (
+          <div className="flex flex-wrap items-center gap-2">
+            <Button type="button" size="sm" onClick={backToVisual} className="rounded-xl">
+              Aplicar HTML e voltar ao visual
+            </Button>
 
-          <ToolbarButton
-            active={editor.isActive("bold")}
-            onClick={() => editor.chain().focus().toggleBold().run()}
-            title="Negrito"
-          >
-            <Bold className="h-4 w-4" />
-          </ToolbarButton>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={applyHtml}
+              className="rounded-xl"
+            >
+              Aplicar HTML
+            </Button>
 
-          <ToolbarButton
-            active={editor.isActive("italic")}
-            onClick={() => editor.chain().focus().toggleItalic().run()}
-            title="Itálico"
-          >
-            <Italic className="h-4 w-4" />
-          </ToolbarButton>
-
-          <ToolbarButton
-            active={editor.isActive("underline")}
-            onClick={() => editor.chain().focus().toggleUnderline().run()}
-            title="Sublinhado"
-          >
-            <UnderlineIcon className="h-4 w-4" />
-          </ToolbarButton>
-
-          <ToolbarButton
-            active={editor.isActive("strike")}
-            onClick={() => editor.chain().focus().toggleStrike().run()}
-            title="Tachado"
-          >
-            <Strikethrough className="h-4 w-4" />
-          </ToolbarButton>
-
-          <ToolbarButton
-            active={editor.isActive("highlight")}
-            onClick={() => editor.chain().focus().toggleHighlight().run()}
-            title="Destacar"
-          >
-            <Highlighter className="h-4 w-4" />
-          </ToolbarButton>
-
-          <ToolbarDivider />
-
-          <ToolbarButton
-            active={editor.isActive({ textAlign: "left" })}
-            onClick={() => editor.chain().focus().setTextAlign("left").run()}
-            title="Alinhar à esquerda"
-          >
-            <AlignLeft className="h-4 w-4" />
-          </ToolbarButton>
-
-          <ToolbarButton
-            active={editor.isActive({ textAlign: "center" })}
-            onClick={() => editor.chain().focus().setTextAlign("center").run()}
-            title="Centralizar"
-          >
-            <AlignCenter className="h-4 w-4" />
-          </ToolbarButton>
-
-          <ToolbarButton
-            active={editor.isActive({ textAlign: "right" })}
-            onClick={() => editor.chain().focus().setTextAlign("right").run()}
-            title="Alinhar à direita"
-          >
-            <AlignRight className="h-4 w-4" />
-          </ToolbarButton>
-
-          <ToolbarButton
-            active={editor.isActive({ textAlign: "justify" })}
-            onClick={() => editor.chain().focus().setTextAlign("justify").run()}
-            title="Justificar"
-          >
-            <AlignJustify className="h-4 w-4" />
-          </ToolbarButton>
-
-          <ToolbarDivider />
-
-          <ToolbarButton
-            active={editor.isActive("bulletList")}
-            onClick={() => editor.chain().focus().toggleBulletList().run()}
-            title="Lista com marcadores"
-          >
-            <List className="h-4 w-4" />
-          </ToolbarButton>
-
-          <ToolbarButton
-            active={editor.isActive("orderedList")}
-            onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            title="Lista numerada"
-          >
-            <ListOrdered className="h-4 w-4" />
-          </ToolbarButton>
-
-          <ToolbarButton
-            active={editor.isActive("taskList")}
-            onClick={() => editor.chain().focus().toggleTaskList().run()}
-            title="Checklist"
-          >
-            <CheckSquare className="h-4 w-4" />
-          </ToolbarButton>
-
-          <ToolbarButton
-            active={editor.isActive("blockquote")}
-            onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            title="Citação"
-          >
-            <Quote className="h-4 w-4" />
-          </ToolbarButton>
-
-          <ToolbarButton
-            active={editor.isActive("codeBlock")}
-            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-            title="Bloco de código"
-          >
-            <Code className="h-4 w-4" />
-          </ToolbarButton>
-
-          <ToolbarButton
-            onClick={() => editor.chain().focus().setHorizontalRule().run()}
-            title="Linha horizontal"
-          >
-            <Minus className="h-4 w-4" />
-          </ToolbarButton>
-
-          <ToolbarDivider />
-
-          <ToolbarButton
-            active={editor.isActive("link")}
-            onClick={addLink}
-            title="Adicionar link"
-          >
-            <LinkIcon className="h-4 w-4" />
-          </ToolbarButton>
-
-          <ToolbarButton onClick={addImage} title="Adicionar imagem">
-            <ImageIcon className="h-4 w-4" />
-          </ToolbarButton>
-
-          <ToolbarDivider />
-
-          <div className="flex items-center gap-1 rounded-xl border border-border bg-background px-2 py-1">
-            <Palette className="h-4 w-4 text-muted-foreground" />
-            <div className="flex items-center gap-1">
-              {COLOR_OPTIONS.map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  className="h-5 w-5 rounded-full border border-border"
-                  style={{ backgroundColor: color }}
-                  onClick={() => editor.chain().focus().setColor(color).run()}
-                  title={color}
-                />
-              ))}
-            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={cancelHtmlChanges}
+              className="rounded-xl"
+            >
+              Descartar alterações do HTML
+            </Button>
           </div>
-
-          <ToolbarButton
-            onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}
-            title="Limpar formatação"
-          >
-            <Eraser className="h-4 w-4" />
-          </ToolbarButton>
-
-          <ToolbarDivider />
-
-          <ToolbarButton
-            onClick={() => editor.chain().focus().undo().run()}
-            disabled={!editor.can().undo()}
-            title="Desfazer"
-          >
-            <Undo2 className="h-4 w-4" />
-          </ToolbarButton>
-
-          <ToolbarButton
-            onClick={() => editor.chain().focus().redo().run()}
-            disabled={!editor.can().redo()}
-            title="Refazer"
-          >
-            <Redo2 className="h-4 w-4" />
-          </ToolbarButton>
-        </div>
+        )}
       </div>
 
       {mode === "visual" && (
@@ -572,46 +620,12 @@ export default function TipTapEditor({
           </div>
 
           <textarea
-            value={htmlValue}
-            onChange={(e) => {
-              const newValue = e.target.value;
-              applyHtmlToEditor(newValue);
-            }}
+            value={htmlDraft}
+            onChange={(e) => setHtmlDraft(e.target.value)}
             spellCheck={false}
             className="min-h-[520px] w-full resize-none border-0 bg-background px-4 py-4 font-mono text-sm outline-none"
             placeholder="<p>Seu HTML aqui...</p>"
           />
-        </div>
-      )}
-
-      {mode === "split" && (
-        <div className="grid min-h-[520px] grid-cols-1 divide-y divide-border lg:grid-cols-2 lg:divide-x lg:divide-y-0">
-          <div className="bg-background">
-            <div className="flex items-center gap-2 border-b border-border px-4 py-3 text-sm text-muted-foreground">
-              <Eye className="h-4 w-4" />
-              Editor visual
-            </div>
-
-            <EditorContent editor={editor} className="tiptap-editor-modern" />
-          </div>
-
-          <div className="bg-background">
-            <div className="flex items-center gap-2 border-b border-border px-4 py-3 text-sm text-muted-foreground">
-              <Code2 className="h-4 w-4" />
-              HTML em tempo real
-            </div>
-
-            <textarea
-              value={htmlValue}
-              onChange={(e) => {
-                const newValue = e.target.value;
-                applyHtmlToEditor(newValue);
-              }}
-              spellCheck={false}
-              className="min-h-[468px] w-full resize-none border-0 bg-background px-4 py-4 font-mono text-sm outline-none"
-              placeholder="<p>Seu HTML aqui...</p>"
-            />
-          </div>
         </div>
       )}
     </div>

@@ -128,7 +128,7 @@ export default function AdminPostEditor() {
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [previewMode, setPreviewMode] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [lastLocalSaveAt, setLastLocalSaveAt] = useState<Date | null>(null);
   const [hasRestoredLocalDraft, setHasRestoredLocalDraft] = useState(false);
   const [publishedAt, setPublishedAt] = useState<string>("");
@@ -206,7 +206,7 @@ export default function AdminPostEditor() {
       const nextStatus = (existingPost.status as PostStatus) || "draft";
       const nextAuthor = existingPost.author || "Cenas de Combate";
       const nextCategoryIds = existingPost.categories?.map((c) => c.id) || [];
-      
+
       // Format publishedAt for input[type="date"]
       let nextPublishedAt = "";
       if (existingPost.publishedAt) {
@@ -607,11 +607,11 @@ export default function AdminPostEditor() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setPreviewMode((prev) => !prev)}
+                onClick={() => setPreviewOpen(true)}
                 className="rounded-xl"
               >
                 <Eye className="mr-1.5 h-4 w-4" />
-                {previewMode ? "Voltar para edição" : "Preview"}
+                Ver preview
               </Button>
 
               <Button
@@ -741,40 +741,18 @@ export default function AdminPostEditor() {
                     Atalhos: Ctrl/Cmd + S para salvar, Ctrl/Cmd + Enter para publicar.
                   </p>
                 </div>
+
                 <Badge variant="outline" className="text-muted-foreground">
-                  {previewMode ? "Modo preview" : "Modo edição"}
+                  Editor clássico
                 </Badge>
               </div>
 
-              {previewMode ? (
-                <div className="min-h-[480px] rounded-2xl border border-border/70 bg-background p-6">
-                  <article className="prose prose-sm max-w-none dark:prose-invert">
-                    {featuredImage && (
-                      <img
-                        src={featuredImage}
-                        alt={title || "Imagem destaque"}
-                        className="mb-6 h-64 w-full rounded-2xl object-cover"
-                      />
-                    )}
-
-                    <h1>{title || "Título do artigo"}</h1>
-
-                    {excerpt && (
-                      <p className="lead text-muted-foreground">
-                        {excerpt}
-                      </p>
-                    )}
-
-                    <div dangerouslySetInnerHTML={{ __html: content || "<p>Sem conteúdo ainda.</p>" }} />
-                  </article>
-                </div>
-              ) : (
-                <TipTapEditor
-                  value={content}
-                  onChange={setContent}
-                  placeholder="Escreva o conteúdo do seu artigo aqui..."
-                />
-              )}
+              <TipTapEditor
+                value={content}
+                onChange={setContent}
+                placeholder="Escreva o conteúdo do seu artigo aqui..."
+                defaultMode="visual"
+              />
             </div>
 
             <div className="rounded-3xl border border-border/60 bg-card p-5 shadow-sm">
@@ -1038,6 +1016,50 @@ export default function AdminPostEditor() {
           </div>
         </div>
       </div>
+      {previewOpen && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4 md:p-8">
+          <div className="flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-border bg-background shadow-2xl">
+            <div className="flex items-center justify-between border-b border-border px-5 py-4">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">Preview do artigo</h2>
+                <p className="text-sm text-muted-foreground">
+                  Visualização separada, sem atrapalhar a edição.
+                </p>
+              </div>
+
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setPreviewOpen(false)}
+                className="rounded-xl"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="overflow-y-auto px-6 py-6 md:px-10">
+              {featuredImage && (
+                <img
+                  src={featuredImage}
+                  alt={title || "Imagem destaque"}
+                  className="mb-6 h-auto max-h-[420px] w-full rounded-2xl object-cover"
+                />
+              )}
+
+              <article className="prose prose-lg max-w-none dark:prose-invert">
+                <h1>{title || "Título do artigo"}</h1>
+
+                {excerpt && (
+                  <p className="lead text-muted-foreground">{excerpt}</p>
+                )}
+
+                <div dangerouslySetInnerHTML={{ __html: content || "<p>Sem conteúdo ainda.</p>" }} />
+              </article>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayoutPro>
   );
 }
