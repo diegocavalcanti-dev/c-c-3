@@ -21,7 +21,7 @@ import AdBanner from "@/components/AdBanner";
 
 const DEFAULT_IMAGE = "/og-default.jpg";
 const DISQUS_SHORTNAME = "cenasdecombate";
-const SITE_URL = "https://cenasdecombate.com";
+const SITE_URL = "https://www.cenasdecombate.com";
 
 const unwrapCollection = (data: any) => {
   if (Array.isArray(data?.json)) return data.json;

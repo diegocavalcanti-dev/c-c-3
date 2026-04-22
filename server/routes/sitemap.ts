@@ -23,7 +23,7 @@ router.get("/sitemap.xml", async (req: Request, res: Response) => {
       .where(eq(posts.status, "published"))
       .orderBy(posts.publishedAt);
 
-    const siteUrl = process.env.SITE_URL || "https://cenasdecombate.com";
+    const siteUrl = process.env.SITE_URL || "https://www.cenasdecombate.com";
 
     // Build XML sitemap
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';

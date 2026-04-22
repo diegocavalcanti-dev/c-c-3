@@ -33,7 +33,7 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
   throw new Error(`No available port found starting from ${startPort}`);
 }
 
-const SITE_URL = process.env.SITE_URL || "https://cenasdecombate.com";
+const SITE_URL = process.env.SITE_URL || "https://www.cenasdecombate.com";
 
 function stripHtml(html = ""): string {
   return html

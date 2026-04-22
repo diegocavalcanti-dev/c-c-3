@@ -13,7 +13,7 @@ export default function SiteFooter() {
             <div className="flex items-center gap-2 mb-3">
               <div className="w-14 h-14 md:w-24 md:h-24 ">
                 <img
-                  src="https://cenasdecombate.com/og-default.jpg"
+                  src="https://www.cenasdecombate.com/og-default.jpg"
                   alt="Logo Cenas de Combate"
                   className="w-full object-contain filter drop-shadow-[0_0px_1px_rgba(0,0,0,0.8)]"
                 />

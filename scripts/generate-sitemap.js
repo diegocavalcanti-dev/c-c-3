@@ -50,7 +50,7 @@ async function generateSitemap() {
     const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${allUrls.map(url => `  <url>
-    <loc>https://cenasdecombate.com${url.url}</loc>
+    <loc>https://www.cenasdecombate.com${url.url}</loc>
     <lastmod>${url.lastmod ? new Date(url.lastmod).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}</lastmod>
     <changefreq>${url.changefreq}</changefreq>
     <priority>${url.priority}</priority>
@@ -73,7 +73,7 @@ ${allUrls.map(url => `  <url>
     // Gerar robots.txt
     const robotsTxt = `User-agent: *
 Allow: /
-Sitemap: https://cenasdecombate.com/sitemap.xml`;
+Sitemap: https://www.cenasdecombate.com/sitemap.xml`;
     
     const robotsPath = path.join(distPublicDir, 'robots.txt');
     fs.writeFileSync(robotsPath, robotsTxt, 'utf-8');
@@ -87,7 +87,7 @@ Sitemap: https://cenasdecombate.com/sitemap.xml`;
     const minimalSitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://cenasdecombate.com/</loc>
+    <loc>https://www.cenasdecombate.com/</loc>
     <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
@@ -100,7 +100,7 @@ Sitemap: https://cenasdecombate.com/sitemap.xml`;
     }
     
     fs.writeFileSync(path.join(distPublicDir, 'sitemap.xml'), minimalSitemap, 'utf-8');
-    fs.writeFileSync(path.join(distPublicDir, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: https://cenasdecombate.com/sitemap.xml`, 'utf-8');
+    fs.writeFileSync(path.join(distPublicDir, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: https://www.cenasdecombate.com/sitemap.xml`, 'utf-8');
     console.log('✅ Sitemap mínimo criado');
   }
 }

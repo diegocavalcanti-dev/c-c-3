@@ -770,7 +770,7 @@ export default function Home() {
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_32%)]" />
                 <div className="relative z-10">
                   <img
-                    src="https://cenasdecombate.com/og-default.jpg"
+                    src="https://www.cenasdecombate.com/og-default.jpg"
                     alt="Cenas de Combate"
                     className="w-20 h-20 rounded-2xl mb-6 shadow-lg border border-white/10 object-cover"
                   />
