@@ -17,12 +17,14 @@ import AdminMedia from "./pages/admin/AdminMedia";
 import AdminCMSPro from "./pages/admin/AdminCMSPro";
 import AdminDashboardPro from "./pages/admin/AdminDashboardPro";
 import AdminPostsListPro from "./pages/admin/AdminPostsListPro";
+import ScrollToTop from "./components/ScrollToTop";
 // import AdPopup from "./components/AdPopup";
 
 
 function Router() {
   return (
     <>
+      <ScrollToTop />
       <Switch>
         {/* Public routes */}
         <Route path="/" component={Home} />
