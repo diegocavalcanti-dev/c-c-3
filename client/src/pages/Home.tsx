@@ -432,20 +432,20 @@ export default function Home() {
               <div className="lg:col-span-8">
                 {heroPost && (
                   <Link href={`/${heroPost.slug}`}>
-                    <article className="group relative overflow-hidden rounded-3xl shadow-2xl bg-zinc-900 border border-white/10 aspect-[16/10] md:aspect-[16/9] cursor-pointer">
+                    <article className="group relative overflow-hidden rounded-3xl shadow-2xl bg-zinc-900 border border-white/50 aspect-[16/10] md:aspect-[16/9] cursor-pointer">
                       <img
                         src={safeImage(heroPost.featuredImage)}
                         alt={heroPost.title}
-                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90 group-hover:opacity-100"
+                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 opacity-99 group-hover:opacity-100"
                       />
 
-                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent" />
 
                       <div className="absolute inset-0 p-5 md:p-10 flex flex-col justify-end">
                         <div className="flex flex-wrap items-center gap-3 mb-4">
-                          <Badge className="bg-primary hover:bg-primary text-white px-3 py-1 text-[10px] font-black tracking-[0.2em] uppercase">
+                          {/* <Badge className="bg-primary hover:bg-primary text-white px-3 py-1 text-[10px] font-black tracking-[0.2em] uppercase">
                             Principal do Momento
-                          </Badge>
+                          </Badge> */}
 
                           {/* <span className="text-white/70 text-xs flex items-center gap-1.5 font-semibold">
                             <Clock3 className="w-3.5 h-3.5" />
