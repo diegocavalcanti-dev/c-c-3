@@ -443,9 +443,9 @@ export default function Home() {
 
                       <div className="absolute inset-0 p-5 md:p-10 flex flex-col justify-end">
                         <div className="flex flex-wrap items-center gap-3 mb-4">
-                          {/* <Badge className="bg-primary hover:bg-primary text-white px-3 py-1 text-[10px] font-black tracking-[0.2em] uppercase">
+                          <Badge className="bg-primary hover:bg-primary text-white px-3 py-1 text-[10px] font-black tracking-[0.2em] uppercase">
                             Principal do Momento
-                          </Badge> */}
+                          </Badge>
 
                           {/* <span className="text-white/70 text-xs flex items-center gap-1.5 font-semibold">
                             <Clock3 className="w-3.5 h-3.5" />
@@ -609,7 +609,7 @@ export default function Home() {
 
         {/* Conflitos Históricos */}
         <section className="bg-zinc-950 py-20 md:py-24 text-zinc-100 relative overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.06),transparent_30%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.06),transparent_90%)]" />
           <div className="absolute top-0 right-0 w-1/3 h-full bg-primary/5 -skew-x-12 translate-x-20" />
 
           <div className="container px-4 relative z-10">

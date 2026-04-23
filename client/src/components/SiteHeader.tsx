@@ -1,187 +1,236 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { Search, Menu, X, Shield, Moon, Sun } from "lucide-react";
+import { Search, Menu, X, Moon, Sun, Info, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTheme } from "@/contexts/ThemeContext";
 
+const quickLinks = [
+  { label: "Sobre", href: "/sobre", icon: Info },
+  { label: "Contato", href: "/contato", icon: MessageSquare },
+  { label: "Buscar", href: "/busca", icon: Search },
+];
+
 export default function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
   const { theme, toggleTheme } = useTheme();
 
   const { data: categories } = trpc.categories.list.useQuery();
 
-  const mainCategories = categories?.slice(0, 7) ?? [];
+  const mainCategories = useMemo(() => categories?.slice(0, 7) ?? [], [categories]);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/busca?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
-    }
+
+    const query = searchQuery.trim();
+    if (!query) return;
+
+    navigate(`/busca?q=${encodeURIComponent(query)}`);
+    setSearchQuery("");
   };
 
+  const isActive = (href: string) => {
+    if (href === "/") return location === "/";
+    return location === href || location.startsWith(`${href}/`);
+  };
+
+  const getCategoryMenuLabel = (cat: any) => {
+    if (cat.slug === "tecnologia-militar") return "Tecnologia";
+    return cat.name;
+  };
+
+  const navItemClass = (active: boolean) =>
+    [
+      "inline-flex h-9 shrink-0 items-center rounded-full px-3 text-sm font-medium whitespace-nowrap transition-colors",
+      active
+        ? "bg-primary/15 text-orange-400 ring-1 ring-orange-500/20"
+        : "text-zinc-300 hover:bg-white/5 hover:text-orange-400",
+    ].join(" ");
+
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm">
-      {/* Top bar */}
-      <div className="bg-primary/10 border-b border-primary/20">
-        <div className="container flex items-center justify-between py-1">
-          <span className="text-xs text-muted-foreground">
+    <header className="sticky top-0 z-50 overflow-hidden border-b border-white/10 bg-[#0b0b0c]/95 text-white backdrop-blur-xl">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.06),transparent_90%)]" />
+      <div className="absolute top-0 right-0 h-full w-1/3 translate-x-20 -skew-x-12 bg-primary/5" />
+
+      <div className="relative z-10 h-[2px] w-full bg-gradient-to-r from-transparent via-orange-500 to-transparent" />
+
+      <div className="relative z-10 border-b border-white/10">
+        <div className="container flex items-center justify-between py-2">
+          <span className="text-[7px] md:text-[8px] uppercase tracking-[0.22em] text-zinc-300">
             Entenda o mundo pelos bastidores dos combates
           </span>
-          {/* <Link href="/admin" className="text-xs text-primary hover:text-primary/80 transition-colors">
-            Painel Admin
-          </Link> */}
+
+          <div className="hidden items-center gap-4 md:flex">
+            {quickLinks.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="inline-flex items-center gap-1.5 text-xs text-zinc-400 transition-colors hover:text-orange-400"
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* Main header */}
-      <div className="container">
-        <div className="flex items-center justify-between py-3 gap-4">
-          {/* Theme toggle */}
-          {toggleTheme && (
+      <div className="container relative z-10">
+        <div className="flex items-center gap-4 py-1 md:py-3">
+          <Link href="/" className="flex shrink-0 items-center gap-1">
+            <div className="h-12 w-12 rounded-2xl p-2  md:h-14 md:w-14">
+              <img
+                src="https://www.cenasdecombate.com/og-default.jpg"
+                alt="Logo Cenas de Combate"
+                className="h-full w-full object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.45)]"
+              />
+            </div>
+
+            <div className="min-w-0">
+              <div className="truncate text-lg font-extrabold tracking-tight text-white md:text-xl">
+                Cenas de Combate
+              </div>
+              <div className="hidden text-[10px] leading-tight text-orange-400 sm:block">
+                História militar, geopolítica e conflitos
+              </div>
+            </div>
+          </Link>
+
+          <div className="hidden min-w-0 flex-1 items-center md:flex">
+            <nav className="flex min-w-0 flex-1 items-center gap-1">
+              <Link href="/" className={navItemClass(isActive("/"))}>
+                Início
+              </Link>
+
+              {mainCategories.map((cat: any) => (
+                <Link
+                  key={cat.id ?? cat.slug}
+                  href={`/categoria/${cat.slug}`}
+                  className={navItemClass(isActive(`/categoria/${cat.slug}`))}
+                >
+                  {getCategoryMenuLabel(cat)}
+                </Link>
+              ))}
+
+              <Link href="/busca" className={navItemClass(isActive("/busca"))}>
+                <Search className="mr-2 h-3.5 w-3.5" />
+                Buscar
+              </Link>
+            </nav>
+
+            <div className="ml-2 flex shrink-0 items-center gap-2">
+              {toggleTheme && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleTheme}
+                  className="rounded-full text-zinc-300 hover:bg-white/5 hover:text-white"
+                  title={theme === "dark" ? "Ativar tema claro" : "Ativar tema escuro"}
+                >
+                  {theme === "dark" ? (
+                    <Sun className="h-4 w-4" />
+                  ) : (
+                    <Moon className="h-4 w-4" />
+                  )}
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="ml-auto flex items-center gap-2 md:hidden">
+            {toggleTheme && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                className="rounded-full text-zinc-300 hover:bg-white/5 hover:text-white"
+                title={theme === "dark" ? "Ativar tema claro" : "Ativar tema escuro"}
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
+              </Button>
+            )}
+
             <Button
               variant="ghost"
               size="icon"
-              onClick={toggleTheme}
-              className="text-muted-foreground hover:text-foreground"
-              title={
-                theme === "dark" ? "Ativar tema claro" : "Ativar tema escuro"
-              }
+              className="rounded-full text-zinc-300 hover:bg-white/5 hover:text-white"
+              onClick={() => setMenuOpen((prev) => !prev)}
+              aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
             >
-              {theme === "dark" ? (
-                <Sun className="w-4 h-4" />
-              ) : (
-                <Moon className="w-4 h-4" />
-              )}
+              {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
-          )}
-
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 shrink-0">
-            {/* <div className="w-9 h-9 rounded bg-primary flex items-center justify-center">
-              <Shield className="w-5 h-5 text-primary-foreground" />
-            </div> */}
-            <div className="">
-              <div className="font-bold text-lg leading-tight text-foreground">
-                Cenas de Combate
-              </div>
-              <div className="text-xs text-muted-foreground leading-tight hidden sm:block">
-                {/* hidden sm:block - SERVE PARA OCULTAR NA VERSÃO MOBILE */}
-                História Militar
-              </div>
-            </div>
-          </Link>
-
-          {/* Search */}
-          <form
-            onSubmit={handleSearch}
-            className="flex-1 max-w-sm hidden md:flex"
-          >
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Buscar artigos..."
-                className="pl-9 bg-secondary border-border text-sm"
-              />
-            </div>
-          </form>
-
-          {/* Mobile menu button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setMenuOpen(!menuOpen)}
-          >
-            {menuOpen ? (
-              <X className="w-5 h-5" />
-            ) : (
-              <Menu className="w-5 h-5" />
-            )}
-          </Button>
+          </div>
         </div>
-
-        {/* Navigation */}
-        <nav className="hidden md:flex items-center gap-1 pb-2 overflow-x-auto">
-          <Link href="/">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-sm font-medium hover:text-primary shrink-0"
-            >
-              Início
-            </Button>
-          </Link>
-          {mainCategories.map(cat => (
-            <Link key={cat.id} href={`/categoria/${cat.slug}`}>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-sm hover:text-primary shrink-0"
-              >
-                {cat.name}
-              </Button>
-            </Link>
-          ))}
-          <Link href="/busca">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-sm hover:text-primary shrink-0"
-            >
-              <Search className="w-3.5 h-3.5 mr-1" />
-              Buscar
-            </Button>
-          </Link>
-        </nav>
       </div>
 
-      {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden border-t border-border bg-card">
-          <div className="container py-3 space-y-1">
-            {/* Mobile search */}
-            <form onSubmit={handleSearch} className="mb-3">
+        <div className="relative z-10 border-t border-white/10 bg-[#0b0b0c]/98 md:hidden">
+          <div className="container space-y-4 py-4">
+            <form onSubmit={handleSearch}>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
                 <Input
                   value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Buscar artigos..."
-                  className="pl-9 bg-secondary"
+                  className="h-11 rounded-full border-white/10 bg-white/5 pl-11 text-sm text-white placeholder:text-zinc-500 focus-visible:ring-primary/40"
                 />
               </div>
             </form>
-            <Link href="/" onClick={() => setMenuOpen(false)}>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start"
-              >
+
+            <div className="space-y-1">
+              <Link href="/" className={navItemClass(isActive("/"))}>
                 Início
-              </Button>
-            </Link>
-            {categories?.map(cat => (
-              <Link
-                key={cat.id}
-                href={`/categoria/${cat.slug}`}
-                onClick={() => setMenuOpen(false)}
-              >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start"
+              </Link>
+
+              {categories?.map((cat: any) => (
+                <Link
+                  key={cat.id ?? cat.slug}
+                  href={`/categoria/${cat.slug}`}
+                  className={navItemClass(isActive(`/categoria/${cat.slug}`))}
                 >
                   {cat.name}
-                </Button>
+                </Link>
+              ))}
+
+              <Link href="/busca" className={navItemClass(isActive("/busca"))}>
+                Buscar
               </Link>
-            ))}
+            </div>
+
+            <div className="border-t border-white/10 pt-3">
+              <div className="grid grid-cols-1 gap-2">
+                {quickLinks.map((item) => {
+                  const Icon = item.icon;
+
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-white/5 hover:text-orange-400"
+                    >
+                      <Icon className="h-4 w-4" />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       )}
