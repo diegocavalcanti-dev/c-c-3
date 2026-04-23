@@ -87,7 +87,7 @@ export default function SiteHeader() {
       </div>
 
       <div className="container relative z-10">
-        <div className="flex items-center gap-4 py-1 md:py-3">
+        <div className="flex items-center gap-4 py-1 md:py-2">
           <Link href="/" className="flex shrink-0 items-center gap-1">
             <div className="h-12 w-12 rounded-2xl p-2  md:h-14 md:w-14">
               <img
