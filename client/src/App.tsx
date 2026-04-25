@@ -49,6 +49,7 @@ function Router() {
         <Route path="/admin/importar" component={AdminImport} />
         <Route path="/admin/media" component={AdminMedia} />
 
+        
         {/* Article route - genérica, deve ser a última */}
         <Route path="/:slug" component={ArticlePage} />
 
