@@ -168,8 +168,8 @@ export default function AdminLayoutPro({ children, title }: AdminLayoutProProps)
                         <div className="flex items-center gap-3 min-w-0">
                           <div
                             className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${active
-                                ? "bg-white/10 text-primary-foreground"
-                                : "bg-muted/60 text-muted-foreground group-hover:text-foreground"
+                              ? "bg-white/10 text-primary-foreground"
+                              : "bg-muted/60 text-muted-foreground group-hover:text-foreground"
                               }`}
                           >
                             <Icon className="w-4 h-4" />
@@ -292,7 +292,12 @@ export default function AdminLayoutPro({ children, title }: AdminLayoutProProps)
                       </p>
                     </>
                   ) : (
-                    <h1 className="text-lg md:text-xl font-semibold truncate">Admin</h1>
+                    <>
+                      <h1 className="text-lg md:text-xl font-semibold truncate">Editor de Artigo</h1>
+                      <p className="hidden md:block text-xs text-muted-foreground mt-0.5">
+                        Painel administrativo
+                      </p>
+                    </>
                   )}
                 </div>
               </div>
