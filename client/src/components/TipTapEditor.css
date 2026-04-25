@@ -5,11 +5,14 @@
 .tiptap-editor-modern .ProseMirror {
   min-height: 420px;
   padding: 1.25rem;
-  font-size: 1rem;
-  line-height: 1.7;
+  font-family: "Open Sans", Helvetica, Arial, sans-serif;
+  font-size: 20px;
+  line-height: 32px;
+  color: #333333;
+  letter-spacing: -0.5px;
   outline: none;
-  color: hsl(var(--foreground));
-  caret-color: hsl(var(--foreground));
+  caret-color: #333333;
+  background: transparent;
 }
 
 /* Focus */
@@ -25,6 +28,11 @@
   outline: none;
   white-space: pre-wrap;
   word-break: break-word;
+  font-family: "Open Sans", Helvetica, Arial, sans-serif;
+  font-size: 20px;
+  line-height: 32px;
+  color: #333333;
+  letter-spacing: -0.5px;
 }
 
 /* =========================================
@@ -32,26 +40,35 @@
 ========================================= */
 .tiptap-editor h1,
 .tiptap-editor-modern .ProseMirror h1 {
-  font-size: 2rem;
+  margin: 2rem 0 1rem 0;
+  font-family: "Open Sans", Helvetica, Arial, sans-serif;
+  font-size: 34px;
+  line-height: 42px;
+  color: #222222;
   font-weight: 800;
-  line-height: 1.1;
-  margin: 1.5rem 0 0.75rem;
+  letter-spacing: -1px;
 }
 
 .tiptap-editor h2,
 .tiptap-editor-modern .ProseMirror h2 {
-  font-size: 1.5rem;
+  margin: 1.75rem 0 1rem 0;
+  font-family: "Open Sans", Helvetica, Arial, sans-serif;
+  font-size: 28px;
+  line-height: 36px;
+  color: #222222;
   font-weight: 700;
-  line-height: 1.2;
-  margin: 1.2rem 0 0.6rem;
+  letter-spacing: -0.8px;
 }
 
 .tiptap-editor h3,
 .tiptap-editor-modern .ProseMirror h3 {
-  font-size: 1.2rem;
+  margin: 1.5rem 0 0.75rem 0;
+  font-family: "Open Sans", Helvetica, Arial, sans-serif;
+  font-size: 24px;
+  line-height: 32px;
+  color: #222222;
   font-weight: 700;
-  line-height: 1.3;
-  margin: 1rem 0 0.5rem;
+  letter-spacing: -0.6px;
 }
 
 /* =========================================
@@ -59,7 +76,12 @@
 ========================================= */
 .tiptap-editor p,
 .tiptap-editor-modern .ProseMirror p {
-  margin: 0.85rem 0;
+  margin: 0 0 1.25rem 0;
+  font-family: "Open Sans", Helvetica, Arial, sans-serif;
+  font-size: 20px;
+  line-height: 32px;
+  color: #333333;
+  letter-spacing: -0.5px;
 }
 
 .tiptap-editor strong,
@@ -79,13 +101,18 @@
 .tiptap-editor ol,
 .tiptap-editor-modern .ProseMirror ul,
 .tiptap-editor-modern .ProseMirror ol {
-  margin: 0.8rem 0;
+  margin: 0.8rem 0 1.25rem 0;
   padding-left: 1.4rem;
 }
 
 .tiptap-editor li,
 .tiptap-editor-modern .ProseMirror li {
   margin: 0.4rem 0;
+  font-family: "Open Sans", Helvetica, Arial, sans-serif;
+  font-size: 20px;
+  line-height: 32px;
+  color: #333333;
+  letter-spacing: -0.5px;
 }
 
 /* =========================================
@@ -254,5 +281,35 @@
 
 .tiptap-editor::-webkit-scrollbar-track,
 .tiptap-editor-modern .ProseMirror::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tiptap-shell {
+  height: min(95vh, 1100px);
+}
+
+.tiptap-toolbar {
+  box-shadow: 0 1px 0 hsl(var(--border));
+}
+
+.tiptap-shell .tiptap-editor,
+.tiptap-shell .tiptap-editor-modern .ProseMirror {
+  min-height: 100%;
+}
+
+.tiptap-shell .ProseMirror {
+  padding-bottom: 8rem;
+}
+
+.tiptap-shell ::-webkit-scrollbar {
+  width: 10px;
+}
+
+.tiptap-shell ::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 999px;
+}
+
+.tiptap-shell ::-webkit-scrollbar-track {
   background: transparent;
 }
