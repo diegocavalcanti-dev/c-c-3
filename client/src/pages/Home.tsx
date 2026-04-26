@@ -397,6 +397,9 @@ export default function Home() {
       <SiteHeader />
 
       <main className="flex-1 pb-20">
+        <h1 className="sr-only">
+          Cenas de Combate - História Militar, Geopolítica e Tecnologia de Defesa
+        </h1>
         {/* Ticker */}
         {/* <div className="border-b border-white/10 bg-zinc-950 text-white">
           <div className="container px-4 py-2.5 flex items-center gap-3 overflow-x-auto">
@@ -453,9 +456,9 @@ export default function Home() {
                           </span> */}
                         </div>
 
-                        <h1 className="text-xl md:text-5xl font-black text-white leading-tight md:leading-[1.05] tracking-tight mb-4 group-hover:text-primary transition-colors">
+                        <h2 className="text-xl md:text-5xl font-black text-white leading-tight md:leading-[1.05] tracking-tight mb-4 group-hover:text-primary transition-colors">
                           {heroPost.title}
-                        </h1>
+                        </h2>
 
 
                         {/* {heroPost.excerpt && (
