@@ -23,7 +23,7 @@ router.get("/sitemap.xml", async (req: Request, res: Response) => {
       .where(eq(posts.status, "published"))
       .orderBy(posts.publishedAt);
 
-    const siteUrl = process.env.SITE_URL || "https://www.cenasdecombate.com";
+    const siteUrl = (process.env.SITE_URL || "https://www.cenasdecombate.com").replace(/\/$/, "");
 
     // Build XML sitemap
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
@@ -40,7 +40,7 @@ router.get("/sitemap.xml", async (req: Request, res: Response) => {
     // Add all published posts
     for (const post of publishedPosts) {
       xml += '  <url>\n';
-      xml += `    <loc>${siteUrl}/posts/${post.slug}</loc>\n`;
+      xml += `    <loc>${siteUrl}/${post.slug}</loc>\n`;
       if (post.updatedAt) {
         xml += `    <lastmod>${post.updatedAt.toISOString().split("T")[0]}</lastmod>\n`;
       }
