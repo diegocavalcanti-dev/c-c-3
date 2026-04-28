@@ -1,7 +1,8 @@
 import { and, desc, eq, like, or, sql, inArray, count } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
-import { InsertUser, users, posts, categories, postCategories, media, InsertPost, InsertCategory, InsertMedia } from "../drizzle/schema";
+import { ensureAuthorsMigration } from "./migrations/ensureAuthorsMigration";
+import { InsertUser, users, posts, categories, postCategories, media, authors, InsertPost, InsertCategory, InsertMedia, InsertAuthor } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -9,12 +10,22 @@ let _db: ReturnType<typeof drizzle> | null = null;
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
+      const isLocalDatabase =
+        process.env.DATABASE_URL.includes("localhost") ||
+        process.env.DATABASE_URL.includes("127.0.0.1");
+
       const pool = mysql.createPool({
         uri: process.env.DATABASE_URL,
-        ssl: {
-          rejectUnauthorized: true,
-        },
+        ...(isLocalDatabase
+          ? {}
+          : {
+              ssl: {
+                rejectUnauthorized: true,
+              },
+            }),
       });
+
+      await ensureAuthorsMigration(pool);
 
       _db = drizzle(pool);
     } catch (error) {
@@ -22,6 +33,7 @@ export async function getDb() {
       _db = null;
     }
   }
+
   return _db;
 }
 
@@ -62,6 +74,58 @@ export async function getUserByOpenId(openId: string) {
   if (!db) return undefined;
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
   return result.length > 0 ? result[0] : undefined;
+}
+
+// ─── Authors ─────────────────────────────────────────────────────────────────
+
+export async function getAllAuthors() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(authors).orderBy(authors.name);
+}
+
+export async function getAuthorBySlug(slug: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(authors).where(eq(authors.slug, slug)).limit(1);
+  return result[0];
+}
+
+export async function getAuthorById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(authors).where(eq(authors.id, id)).limit(1);
+  return result[0];
+}
+
+export async function createAuthor(data: InsertAuthor) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(authors).values(data);
+  return (result as any)[0]?.insertId;
+}
+
+export async function updateAuthor(id: number, data: Partial<InsertAuthor>) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  return db.update(authors).set(data).where(eq(authors.id, id));
+}
+
+export async function deleteAuthor(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  return db.delete(authors).where(eq(authors.id, id));
+}
+
+export async function getAuthorPosts(authorId: number, opts: { limit?: number; offset?: number } = {}) {
+  const db = await getDb();
+  if (!db) return { posts: [], total: 0 };
+  const { limit = 20, offset = 0 } = opts;
+  const [rows, countResult] = await Promise.all([
+    db.select().from(posts).where(and(eq(posts.authorId, authorId), eq(posts.status, 'published'))).orderBy(desc(posts.publishedAt)).limit(limit).offset(offset),
+    db.select({ count: count() }).from(posts).where(and(eq(posts.authorId, authorId), eq(posts.status, 'published'))),
+  ]);
+  return { posts: rows, total: countResult[0]?.count ?? 0 };
 }
 
 // ─── Categories ──────────────────────────────────────────────────────────────

@@ -86,3 +86,22 @@
 - [x] Testar funcionalidade de mídia com 6 testes vitest
 - [x] Todos os 43 testes passando (37 anteriores + 6 novos de mídia)
 - [x] MediaGallery renderiza imagens corretamente do backend
+<<<<<<< HEAD
+
+
+## Sistema de Autores
+- [x] Criar tabela `authors` no schema Drizzle (id, name, slug, bio, avatar, createdAt, updatedAt)
+- [x] Adicionar foreign key `authorId` na tabela `posts`
+- [x] Gerar e aplicar migration SQL para tabela de autores
+- [x] Implementar procedures tRPC: authors.list, authors.get, authors.create, authors.update, authors.delete
+- [x] Criar helpers em server/db.ts: getAllAuthors, getAuthorBySlug, getAuthorPosts
+- [x] Criar página AdminAuthors.tsx no dashboard
+- [x] Adicionar menu "Autores" na sidebar do AdminLayout
+- [x] Atualizar AdminPostEditor.tsx para seleção de autor
+- [x] Criar página pública /autores (lista todos os autores)
+- [x] Criar página pública /autores/:slug (página do autor com seus artigos)
+- [x] Implementar SEO nas páginas de autores
+- [x] Escrever testes vitest para procedures de autores (7/7 testes passando)
+- [ ] Sincronizar com GitHub e publicar
+=======
+>>>>>>> 8afa88b (config new project)

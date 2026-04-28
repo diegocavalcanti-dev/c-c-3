@@ -24,6 +24,19 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
+export const authors = mysqlTable("authors", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  bio: text("bio"),
+  avatar: text("avatar"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Author = typeof authors.$inferSelect;
+export type InsertAuthor = typeof authors.$inferInsert;
+
 export const categories = mysqlTable("categories", {
   id: int("id").autoincrement().primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
@@ -46,6 +59,7 @@ export const posts = mysqlTable("posts", {
   featuredImage: text("featuredImage"),
   status: mysqlEnum("status", ["draft", "published", "archived"]).default("draft").notNull(),
   author: varchar("author", { length: 255 }).default("Cenas de Combate"),
+  authorId: int("authorId"),
   viewCount: int("viewCount").default(0).notNull(),
   publishedAt: timestamp("publishedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

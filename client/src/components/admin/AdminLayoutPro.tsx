@@ -52,6 +52,7 @@ export default function AdminLayoutPro({ children, title }: AdminLayoutProProps)
       items: [
         { icon: FileText, label: "Artigos", href: "/admin/posts", id: "posts" },
         { icon: FolderOpen, label: "Categorias", href: "/admin/categorias", id: "categories" },
+        { icon: FolderOpen, label: "Autores", href: "/admin/autores", id: "authors" },
         { icon: Image, label: "Mídia", href: "/admin/media", id: "media" },
       ],
     },

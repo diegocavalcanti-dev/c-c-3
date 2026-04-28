@@ -17,6 +17,9 @@ import AdminMedia from "./pages/admin/AdminMedia";
 import AdminCMSPro from "./pages/admin/AdminCMSPro";
 import AdminDashboardPro from "./pages/admin/AdminDashboardPro";
 import AdminPostsListPro from "./pages/admin/AdminPostsListPro";
+import AdminAuthors from "./pages/admin/AdminAuthors";
+import AuthorsListPage from "./pages/AuthorsListPage";
+import AuthorPage from "./pages/AuthorPage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
@@ -33,6 +36,8 @@ function Router() {
         {/* Public routes */}
         <Route path="/" component={Home} />
         <Route path="/categoria/:slug" component={ArticleList} />
+        <Route path="/autores" component={AuthorsListPage} />
+        <Route path="/autores/:slug" component={AuthorPage} />
         <Route path="/busca" component={SearchPage} />
         <Route path="/politica-de-privacidade" component={PrivacyPolicy} />
         <Route path="/sobre" component={AboutPage} />
@@ -46,10 +51,11 @@ function Router() {
         <Route path="/admin/posts/novo" component={AdminPostEditor} />
         <Route path="/admin/posts/:id/editar" component={AdminPostEditor} />
         <Route path="/admin/categorias" component={AdminCategories} />
+        <Route path="/admin/autores" component={AdminAuthors} />
         <Route path="/admin/importar" component={AdminImport} />
         <Route path="/admin/media" component={AdminMedia} />
 
-        
+
         {/* Article route - genérica, deve ser a última */}
         <Route path="/:slug" component={ArticlePage} />
 
