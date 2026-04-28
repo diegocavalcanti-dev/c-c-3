@@ -86,8 +86,6 @@
 - [x] Testar funcionalidade de mídia com 6 testes vitest
 - [x] Todos os 43 testes passando (37 anteriores + 6 novos de mídia)
 - [x] MediaGallery renderiza imagens corretamente do backend
-<<<<<<< HEAD
-
 
 ## Sistema de Autores
 - [x] Criar tabela `authors` no schema Drizzle (id, name, slug, bio, avatar, createdAt, updatedAt)
@@ -102,6 +100,4 @@
 - [x] Criar página pública /autores/:slug (página do autor com seus artigos)
 - [x] Implementar SEO nas páginas de autores
 - [x] Escrever testes vitest para procedures de autores (7/7 testes passando)
-- [ ] Sincronizar com GitHub e publicar
-=======
->>>>>>> 8afa88b (config new project)
+- [x] Sincronizar com GitHub e publicar
