@@ -12,6 +12,7 @@ const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/admin/posts", label: "Artigos", icon: FileText },
   { href: "/admin/categorias", label: "Categorias", icon: FolderOpen },
+  { href: "/admin/autores", label: "Autores", icon: FolderOpen },
   { href: "/admin/importar", label: "Importar WP", icon: Upload },
 ];
 

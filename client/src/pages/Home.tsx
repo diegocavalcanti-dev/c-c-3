@@ -842,6 +842,7 @@ export default function Home() {
                     Receba análises, matérias e destaques da semana direto no seu e-mail.
                   </p>
 
+
                   {!isSubscribed ? (
                     <form onSubmit={handleSubscribe} className="space-y-3">
                       <div className="relative">

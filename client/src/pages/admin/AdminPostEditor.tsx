@@ -238,6 +238,7 @@ export default function AdminPostEditor() {
   const [featuredImage, setFeaturedImage] = useState("");
   const [status, setStatus] = useState<PostStatus>("draft");
   const [author, setAuthor] = useState("Cenas de Combate");
+  const [authorId, setAuthorId] = useState<number | null>(null);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -255,6 +256,7 @@ export default function AdminPostEditor() {
   const utils = trpc.useUtils();
 
   const { data: categories } = trpc.categories.list.useQuery();
+  const { data: authors } = trpc.authors.list.useQuery();
 
   const { data: existingPost, isLoading: loadingPost } = trpc.cms.getPost.useQuery(
     { id: postId! },
@@ -670,6 +672,7 @@ export default function AdminPostEditor() {
       excerpt: normalizedExcerpt,
       status: finalStatus,
       author: normalizedAuthor,
+      authorId: authorId,
       categoryIds: selectedCategoryIds,
       publishedAt: publishedAtIso,
     };
@@ -1141,11 +1144,36 @@ export default function AdminPostEditor() {
 
               <div className="space-y-2">
                 <Label htmlFor="author">Autor</Label>
+
+                <Select value={authorId?.toString() || "default"} onValueChange={(val) => {
+                  if (val === "default") {
+                    setAuthorId(null);
+                    setAuthor("Cenas de Combate");
+                  } else {
+                    const id = parseInt(val);
+                    setAuthorId(id);
+                    const selectedAuthor = authors?.find(a => a.id === id);
+                    if (selectedAuthor) setAuthor(selectedAuthor.name);
+                  }
+                }}>
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue placeholder="Selecione um autor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">Padrão (Cenas de Combate)</SelectItem>
+                    {authors?.map((author) => (
+                      <SelectItem key={author.id} value={author.id.toString()}>
+                        {author.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">Ou use o campo abaixo para autor customizado</p>
                 <Input
-                  id="author"
+                  id="author-custom"
                   value={author}
                   onChange={(e) => setAuthor(e.target.value)}
-                  className="rounded-xl"
+                  placeholder="Autor customizado"
                 />
               </div>
 
