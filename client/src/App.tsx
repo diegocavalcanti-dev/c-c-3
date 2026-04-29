@@ -25,6 +25,7 @@ import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import TermsPage from "./pages/TermsPage";
 import ScrollToTop from "./components/ScrollToTop";
+import GoogleAnalyticsPageViews from "./components/GoogleAnalyticsPageViews";
 // import AdPopup from "./components/AdPopup";
 
 
@@ -73,6 +74,7 @@ function App() {
       <ThemeProvider defaultTheme="light" switchable>
         <TooltipProvider>
           <Toaster />
+          <GoogleAnalyticsPageViews />
           <Router />
           {/* <AdPopup /> */}
         </TooltipProvider>

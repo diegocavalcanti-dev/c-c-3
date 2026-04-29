@@ -65,6 +65,12 @@ export default function ArticlePage() {
   const post = unwrapItem(postData);
   const latestPosts = unwrapCollection(latestPostsData);
 
+  useEffect(() => {
+    if (!post?.title) return;
+
+    document.title = `${post.title} | Cenas de Combate`;
+  }, [post?.title]);
+
   const categories =
     post?.categories && Array.isArray(post.categories) && post.categories.length > 0
       ? post.categories
