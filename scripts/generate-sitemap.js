@@ -73,7 +73,9 @@ ${allUrls.map(url => `  <url>
     // Gerar robots.txt
     const robotsTxt = `User-agent: *
 Allow: /
-Sitemap: https://www.cenasdecombate.com/sitemap.xml`;
+
+Sitemap: https://www.cenasdecombate.com/sitemap.xml
+Sitemap: https://www.cenasdecombate.com/feed.xml`;
     
     const robotsPath = path.join(distPublicDir, 'robots.txt');
     fs.writeFileSync(robotsPath, robotsTxt, 'utf-8');

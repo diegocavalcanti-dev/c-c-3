@@ -9,7 +9,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
-import { getPostBySlug, getPostCategories } from "../db";
+import { getPostBySlug, getPostCategories, getPublishedPosts } from "../db";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -46,6 +46,15 @@ function stripHtml(html = ""): string {
     .replace(/&#39;/gi, "'")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function escapeXml(value = ""): string {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
 }
 
 function toAbsoluteUrl(url?: string | null): string | null {
@@ -146,6 +155,73 @@ async function startServer() {
       return res.status(500).json({ error: "internal_error" });
     }
   });
+
+  app.get("/feed.xml", async (_req, res) => {
+  try {
+    const result = await getPublishedPosts({
+      page: 1,
+      limit: 50,
+    });
+
+    const posts = result.posts || [];
+
+    const items = posts
+      .map((post) => {
+        const postUrl = `${SITE_URL}/${post.slug}`;
+        const description = stripHtml(post.excerpt || post.content || "").slice(0, 300);
+
+        const date =
+          post.publishedAt ||
+          post.updatedAt ||
+          post.createdAt ||
+          new Date();
+
+        return `
+    <item>
+      <title>${escapeXml(post.title)}</title>
+      <link>${escapeXml(postUrl)}</link>
+      <guid isPermaLink="true">${escapeXml(postUrl)}</guid>
+      <description>${escapeXml(description)}</description>
+      <pubDate>${new Date(date).toUTCString()}</pubDate>
+    </item>`;
+      })
+      .join("");
+
+    const lastBuildDate =
+      posts.length > 0
+        ? new Date(
+            posts[0].updatedAt ||
+              posts[0].publishedAt ||
+              posts[0].createdAt ||
+              new Date()
+          ).toUTCString()
+        : new Date().toUTCString();
+
+    const rss = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Cenas de Combate</title>
+    <link>${escapeXml(SITE_URL)}</link>
+    <description>História militar, guerras, batalhas, estratégia e geopolítica.</description>
+    <language>pt-BR</language>
+    <lastBuildDate>${lastBuildDate}</lastBuildDate>
+    <ttl>60</ttl>
+${items}
+  </channel>
+</rss>`;
+
+    res.setHeader("Content-Type", "application/rss+xml; charset=utf-8");
+    res.setHeader(
+      "Cache-Control",
+      "public, s-maxage=600, stale-while-revalidate=3600"
+    );
+
+    return res.send(rss);
+  } catch (error) {
+    console.error("[rss] failed:", error);
+    return res.status(500).send("Erro ao gerar feed RSS");
+  }
+});
 
   app.use(
     "/api/trpc",
