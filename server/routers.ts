@@ -5,6 +5,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { notifyOwner } from "./_core/notification";
+import { submitToIndexNow } from "./_core/indexnow";
 import {
   getAllPostsAdmin, getPostStats,
   bulkInsertCategories, bulkInsertPosts, createMedia, getAllMedia, deleteMedia as deleteMediaDb,
@@ -214,6 +215,11 @@ export const appRouter = router({
         const id = await createPost(insertData, categoryIds);
 
         if (postData.status === 'published') {
+          void submitToIndexNow([
+            `/${postData.slug}`,
+            "/",
+          ]);
+
           try {
             await notifyOwner({
               title: `Novo artigo publicado: ${postData.title}`,
@@ -246,19 +252,38 @@ export const appRouter = router({
 
         const existing = await getPostById(id);
         const wasPublished = existing?.status === 'published';
-        const isNowPublished = postData.status === 'published';
+
+        const willBePublished = (postData.status ?? existing?.status) === 'published';
 
         const updateData: any = { ...postData };
         if (publishedAt !== undefined) {
           updateData.publishedAt = publishedAt ? new Date(publishedAt) : null;
         }
-        if (isNowPublished && !wasPublished && !updateData.publishedAt) {
+        if (willBePublished && !wasPublished && !updateData.publishedAt) {
           updateData.publishedAt = new Date();
         }
 
         await updatePost(id, updateData, categoryIds);
 
-        if (isNowPublished && !wasPublished) {
+        if (willBePublished) {
+          const urlsToSubmit = new Set<string>();
+
+          const finalSlug = postData.slug || existing?.slug;
+
+          if (finalSlug) {
+            urlsToSubmit.add(`/${finalSlug}`);
+          }
+
+          if (existing?.slug && postData.slug && existing.slug !== postData.slug) {
+            urlsToSubmit.add(`/${existing.slug}`);
+          }
+
+          urlsToSubmit.add("/");
+
+          void submitToIndexNow(Array.from(urlsToSubmit));
+        }
+
+        if (willBePublished && !wasPublished) {
           try {
             await notifyOwner({
               title: `Artigo publicado: ${postData.title || existing?.title}`,
@@ -275,7 +300,17 @@ export const appRouter = router({
     deletePost: adminProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
+        const existing = await getPostById(input.id);
+
         await deletePost(input.id);
+
+        if (existing?.status === 'published' && existing.slug) {
+          void submitToIndexNow([
+            `/${existing.slug}`,
+            "/",
+          ]);
+        }
+
         return { success: true };
       }),
 
