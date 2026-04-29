@@ -20,6 +20,7 @@
     { "source": "/favicon.ico", "destination": "/favicon.ico" },
     { "source": "/robots.txt", "destination": "/robots.txt" },
     { "source": "/sitemap.xml", "destination": "/sitemap.xml" },
+    { "source": "/feed.xml", "destination": "/feed.xml" },
     { "source": "/og-default.jpg", "destination": "/og-default.jpg" },
     { "source": "/404", "destination": "/index.html" },
 
