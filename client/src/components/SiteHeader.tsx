@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useLocation } from "wouter";
-import { trpc } from "@/lib/trpc";
 import { Search, Menu, X, Moon, Sun, Info, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,21 +11,32 @@ const quickLinks = [
   { label: "Buscar", href: "/busca", icon: Search },
 ];
 
+const mainCategories = [
+  { name: "1ª Guerra Mundial", slug: "1a-guerra-mundial" },
+  { name: "2ª Guerra Mundial", slug: "2a-guerra-mundial" },
+  { name: "Aviões", slug: "avioes" },
+  { name: "Geopolítica", slug: "geopolitica" },
+  { name: "Matérias", slug: "materias" },
+  { name: "Notícias", slug: "noticias" },
+  { name: "Tecnologia Militar", slug: "tecnologia-militar" },
+];
+
+type HeaderCategory = {
+  name: string;
+  slug: string;
+};
+
 export default function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [location, navigate] = useLocation();
   const { theme, toggleTheme } = useTheme();
 
-  const { data: categories } = trpc.categories.list.useQuery();
-
-  const mainCategories = useMemo(() => categories?.slice(0, 7) ?? [], [categories]);
-
   useEffect(() => {
     setMenuOpen(false);
   }, [location]);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = (e: FormEvent) => {
     e.preventDefault();
 
     const query = searchQuery.trim();
@@ -41,7 +51,7 @@ export default function SiteHeader() {
     return location === href || location.startsWith(`${href}/`);
   };
 
-  const getCategoryMenuLabel = (cat: any) => {
+  const getCategoryMenuLabel = (cat: HeaderCategory) => {
     if (cat.slug === "tecnologia-militar") return "Tecnologia";
     return cat.name;
   };
@@ -89,7 +99,7 @@ export default function SiteHeader() {
       <div className="container relative z-10">
         <div className="flex items-center gap-4 py-1 md:py-2">
           <Link href="/" className="flex shrink-0 items-center gap-1">
-            <div className="h-12 w-12 rounded-2xl p-2  md:h-14 md:w-14">
+            <div className="h-12 w-12 rounded-2xl p-2 md:h-14 md:w-14">
               <img
                 src="https://www.cenasdecombate.com/og-default.jpg"
                 alt="Logo Cenas de Combate"
@@ -113,9 +123,9 @@ export default function SiteHeader() {
                 Início
               </Link>
 
-              {mainCategories.map((cat: any) => (
+              {mainCategories.map((cat) => (
                 <Link
-                  key={cat.id ?? cat.slug}
+                  key={cat.slug}
                   href={`/categoria/${cat.slug}`}
                   className={navItemClass(isActive(`/categoria/${cat.slug}`))}
                 >
@@ -198,13 +208,13 @@ export default function SiteHeader() {
                 Início
               </Link>
 
-              {categories?.map((cat: any) => (
+              {mainCategories.map((cat) => (
                 <Link
-                  key={cat.id ?? cat.slug}
+                  key={cat.slug}
                   href={`/categoria/${cat.slug}`}
                   className={navItemClass(isActive(`/categoria/${cat.slug}`))}
                 >
-                  {cat.name}
+                  {getCategoryMenuLabel(cat)}
                 </Link>
               ))}
 
