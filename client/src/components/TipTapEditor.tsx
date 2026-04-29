@@ -53,16 +53,16 @@ interface TipTapEditorProps {
 const DEFAULT_EDITOR_FONT = '"Open Sans", Helvetica, Arial, sans-serif';
 
 const PARAGRAPH_STYLE =
-  "font-family: 'Open Sans', Helvetica, Arial, sans-serif; font-size: 20px; line-height: 32px; color: #333333; letter-spacing: -0.5px;";
+  "font-family: 'Open Sans', Helvetica, Arial, sans-serif; font-size: 18px; line-height: 32px; letter-spacing: -0.5px;";
 
 const H1_STYLE =
-  "font-family: 'Open Sans', Helvetica, Arial, sans-serif; font-size: 34px; line-height: 42px; color: #222222; font-weight: 800; letter-spacing: -1px;";
+  "font-family: 'Open Sans', Helvetica, Arial, sans-serif; font-size: 30px; line-height: 42px; font-weight: 800; letter-spacing: -1px;";
 
 const H2_STYLE =
-  "font-family: 'Open Sans', Helvetica, Arial, sans-serif; font-size: 28px; line-height: 36px; color: #222222; font-weight: 700; letter-spacing: -0.8px;";
+  "font-family: 'Open Sans', Helvetica, Arial, sans-serif; font-size: 24px; line-height: 36px; font-weight: 700; letter-spacing: -0.8px;";
 
 const H3_STYLE =
-  "font-family: 'Open Sans', Helvetica, Arial, sans-serif; font-size: 24px; line-height: 32px; color: #222222; font-weight: 700; letter-spacing: -0.6px;";
+  "font-family: 'Open Sans', Helvetica, Arial, sans-serif; font-size: 20px; line-height: 32px; font-weight: 700; letter-spacing: -0.6px;";
 
 const FONT_OPTIONS = [
   { label: "Open Sans", value: DEFAULT_EDITOR_FONT },

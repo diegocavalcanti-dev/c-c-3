@@ -548,3 +548,50 @@ body.light.disqus-fix #disqus_thread a,
 .light #disqus_thread a {
   color: #d97706 !important;
 }
+
+/* =========================
+   ARTICLE CONTENT FIX
+   Corrige estilos inline salvos pelo TipTap
+   ========================= */
+
+html.dark .article-content,
+html:not(.light) .article-content {
+  font-family: "Open Sans", Helvetica, Arial, sans-serif;
+  color: #ffffff !important;
+}
+
+/* Texto comum salvo com style inline */
+html.dark .article-content :where(p, li, span, strong, em),
+html:not(.light) .article-content :where(p, li, span, strong, em) {
+  color: #ffffff !important;
+}
+
+/* Títulos salvos com style inline */
+html.dark .article-content :where(h1, h2, h3, h4),
+html:not(.light) .article-content :where(h1, h2, h3, h4) {
+  color: #f4f4f5 !important;
+}
+
+/* Blockquote */
+html.dark .article-content blockquote,
+html.dark .article-content blockquote p,
+html:not(.light) .article-content blockquote,
+html:not(.light) .article-content blockquote p {
+  color: #d7d7d7 !important;
+}
+
+/* Links */
+html.dark .article-content a,
+html:not(.light) .article-content a {
+  color: oklch(0.72 0.18 75) !important;
+}
+
+/* Marca-texto: mantém fundo claro com texto escuro */
+html.dark .article-content mark,
+html.dark .article-content span[style*="background"],
+html.dark .article-content span[style*="background-color"],
+html:not(.light) .article-content mark,
+html:not(.light) .article-content span[style*="background"],
+html:not(.light) .article-content span[style*="background-color"] {
+  color: #111827 !important;
+}
