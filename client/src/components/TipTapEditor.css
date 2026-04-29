@@ -313,3 +313,122 @@
 .tiptap-shell ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* =========================================
+   TipTap theme fix - dark / light
+   Colocar no FINAL do tiptapeditor.css
+========================================= */
+
+/* DARK é o padrão do site */
+:root .tiptap-editor,
+:root .tiptap-editor-modern .ProseMirror,
+:root .tiptap-editor .ProseMirror {
+  font-family: "Open Sans", Helvetica, Arial, sans-serif;
+  color: #ffffff;
+  caret-color: #ffffff;
+  background: transparent;
+}
+
+:root .tiptap-editor p,
+:root .tiptap-editor-modern .ProseMirror p,
+:root .tiptap-editor li,
+:root .tiptap-editor-modern .ProseMirror li {
+  color: #ffffff;
+  font-family: "Open Sans", Helvetica, Arial, sans-serif;
+  font-size: 20px;
+  line-height: 32px;
+  letter-spacing: -0.5px;
+}
+
+:root .tiptap-editor h1,
+:root .tiptap-editor-modern .ProseMirror h1,
+:root .tiptap-editor h2,
+:root .tiptap-editor-modern .ProseMirror h2,
+:root .tiptap-editor h3,
+:root .tiptap-editor-modern .ProseMirror h3 {
+  color: #f4f4f5;
+  font-family: "Open Sans", Helvetica, Arial, sans-serif;
+}
+
+:root .tiptap-editor strong,
+:root .tiptap-editor-modern .ProseMirror strong {
+  color: inherit;
+  font-weight: 700;
+}
+
+:root .tiptap-editor blockquote,
+:root .tiptap-editor-modern .ProseMirror blockquote {
+  border-left: 4px solid oklch(0.72 0.18 75);
+  color: oklch(0.68 0.01 80);
+  background: oklch(0.20 0.008 240 / 0.45);
+}
+
+:root .tiptap-editor a,
+:root .tiptap-editor-modern .ProseMirror a {
+  color: oklch(0.72 0.18 75);
+}
+
+:root .tiptap-editor code,
+:root .tiptap-editor-modern .ProseMirror code,
+:root .tiptap-editor pre,
+:root .tiptap-editor-modern .ProseMirror pre {
+  color: #f4f4f5;
+  background: oklch(0.20 0.008 240);
+}
+
+:root .tiptap-editor mark,
+:root .tiptap-editor-modern .ProseMirror mark {
+  color: #111827;
+  background: #facc15;
+}
+
+/* LIGHT */
+.light .tiptap-editor,
+.light .tiptap-editor-modern .ProseMirror,
+.light .tiptap-editor .ProseMirror {
+  color: #333333;
+  caret-color: #333333;
+  background: transparent;
+}
+
+.light .tiptap-editor p,
+.light .tiptap-editor-modern .ProseMirror p,
+.light .tiptap-editor li,
+.light .tiptap-editor-modern .ProseMirror li {
+  color: #333333;
+}
+
+.light .tiptap-editor h1,
+.light .tiptap-editor-modern .ProseMirror h1,
+.light .tiptap-editor h2,
+.light .tiptap-editor-modern .ProseMirror h2,
+.light .tiptap-editor h3,
+.light .tiptap-editor-modern .ProseMirror h3 {
+  color: #222222;
+}
+
+.light .tiptap-editor blockquote,
+.light .tiptap-editor-modern .ProseMirror blockquote {
+  border-left: 4px solid oklch(0.60 0.16 75);
+  color: oklch(0.40 0.01 240);
+  background: oklch(0.92 0.008 240 / 0.6);
+}
+
+.light .tiptap-editor a,
+.light .tiptap-editor-modern .ProseMirror a {
+  color: oklch(0.60 0.16 75);
+}
+
+.light .tiptap-editor code,
+.light .tiptap-editor-modern .ProseMirror code,
+.light .tiptap-editor pre,
+.light .tiptap-editor-modern .ProseMirror pre {
+  color: #222222;
+  background: oklch(0.92 0.008 240);
+}
+
+.light .tiptap-editor mark,
+.light .tiptap-editor-modern .ProseMirror mark {
+  color: #111827;
+  background: #ffe0b2;
+}
