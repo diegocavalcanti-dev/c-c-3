@@ -557,13 +557,13 @@ body.light.disqus-fix #disqus_thread a,
 html.dark .article-content,
 html:not(.light) .article-content {
   font-family: "Open Sans", Helvetica, Arial, sans-serif;
-  color: #ffffff !important;
+  color: #e2e2e2 !important;
 }
 
 /* Texto comum salvo com style inline */
 html.dark .article-content :where(p, li, span, strong, em),
 html:not(.light) .article-content :where(p, li, span, strong, em) {
-  color: #ffffff !important;
+  color: #e2e2e2 !important;
 }
 
 /* Títulos salvos com style inline */
@@ -594,4 +594,18 @@ html:not(.light) .article-content mark,
 html:not(.light) .article-content span[style*="background"],
 html:not(.light) .article-content span[style*="background-color"] {
   color: #111827 !important;
+}
+
+.article-content iframe {
+  max-width: 100%;
+  border: 0;
+  border-radius: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+.article-content iframe[src*="youtube.com"],
+.article-content iframe[src*="youtube-nocookie.com"] {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
 }
