@@ -12,7 +12,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Plus, Edit, Trash2, FolderOpen } from "lucide-react";
+import { Plus, Edit, Trash2, FolderOpen, Edit2 } from "lucide-react";
 import AdminLayoutPro from "@/components/admin/AdminLayoutPro";
 
 function slugify(text: string): string {
@@ -104,8 +104,18 @@ export default function AdminCategories() {
 
   return (
     <AdminLayoutPro title="Categorias">
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Gerenciar Categorias</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Crie e organize categorias de artigos
+          </p>
+        </div>
+      </div>
+
+
       <div className="max-w-3xl">
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center justify-between mb-5 mt-5">
           <p className="text-sm text-muted-foreground">
             {categories?.length ?? 0} categorias
           </p>
@@ -150,15 +160,15 @@ export default function AdminCategories() {
                     <td className="p-3">
                       <div className="flex items-center justify-end gap-1">
                         <Button
-                          variant="ghost" size="icon"
-                          className="w-7 h-7 text-muted-foreground hover:text-primary"
+                          variant="outline"
+                          size="sm"
                           onClick={() => openEdit(cat)}
                         >
-                          <Edit className="w-3.5 h-3.5" />
+                          <Edit2 className="h-4 w-4" />
                         </Button>
                         <Button
-                          variant="ghost" size="icon"
-                          className="w-7 h-7 text-muted-foreground hover:text-destructive"
+                          variant="destructive"
+                          size="sm"
                           onClick={() => setDeleteId(cat.id)}
                         >
                           <Trash2 className="w-3.5 h-3.5" />

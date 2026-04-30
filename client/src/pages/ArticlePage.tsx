@@ -37,6 +37,31 @@ const unwrapItem = (data: any) => {
 const safeImage = (src?: string) =>
   typeof src === "string" && src.trim().length > 0 ? src : DEFAULT_IMAGE;
 
+function loadExternalScript(id: string, src: string) {
+  return new Promise<void>((resolve, reject) => {
+    if (typeof document === "undefined") {
+      resolve();
+      return;
+    }
+
+    const existing = document.getElementById(id) as HTMLScriptElement | null;
+
+    if (existing) {
+      resolve();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.id = id;
+    script.src = src;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Erro ao carregar ${src}`));
+
+    document.body.appendChild(script);
+  });
+}
+
 export default function ArticlePage() {
   const { slug } = useParams<{ slug: string }>();
   const [copied, setCopied] = useState(false);
@@ -64,6 +89,58 @@ export default function ArticlePage() {
 
   const post = unwrapItem(postData);
   const latestPosts = unwrapCollection(latestPostsData);
+
+  useEffect(() => {
+    const html = post?.content || "";
+    if (!html) return;
+
+    let cancelled = false;
+
+    async function processEmbeds() {
+      try {
+        const hasInstagram =
+          html.includes("instagram-media") ||
+          html.includes("instagram.com/p/") ||
+          html.includes("instagram.com/reel/");
+
+        const hasTwitter =
+          html.includes("twitter-tweet") ||
+          html.includes("platform.twitter.com/widgets.js") ||
+          html.includes("twitter.com/") ||
+          html.includes("x.com/");
+
+        if (hasInstagram) {
+          await loadExternalScript(
+            "instagram-embed-script",
+            "https://www.instagram.com/embed.js"
+          );
+
+          if (!cancelled) {
+            (window as any).instgrm?.Embeds?.process?.();
+          }
+        }
+
+        if (hasTwitter) {
+          await loadExternalScript(
+            "twitter-widgets-script",
+            "https://platform.twitter.com/widgets.js"
+          );
+
+          if (!cancelled) {
+            (window as any).twttr?.widgets?.load?.();
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao processar embeds sociais:", error);
+      }
+    }
+
+    processEmbeds();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [post?.content, slug]);
 
   useEffect(() => {
     if (!post?.title) return;
